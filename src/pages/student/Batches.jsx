@@ -4,6 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import toast from 'react-hot-toast';
+import { Card, Button, Modal, Input, Row, Col, Typography, Tag, Spin, Space } from 'antd';
+import { CalendarOutlined, CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
+
+const { Title, Text } = Typography;
 
 const batches = [
   {
@@ -113,94 +117,109 @@ export default function StudentBatches() {
     return registration.status;
   };
 
-  const getStatusBadge = (status) => {
-    switch (status) {
-      case 'pending':
-        return <span className="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Pending</span>;
-      case 'approved':
-        return <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Approved</span>;
-      case 'rejected':
-        return <span className="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Rejected</span>;
-      default:
-        return null;
-    }
+  const getStatusTag = (status) => {
+    const statusConfig = {
+      pending: { color: 'warning', icon: <ClockCircleOutlined />, text: 'Pending' },
+      approved: { color: 'success', icon: <CheckCircleOutlined />, text: 'Approved' },
+      rejected: { color: 'error', icon: <CloseCircleOutlined />, text: 'Rejected' }
+    };
+    const config = statusConfig[status];
+    return (
+      <Tag color={config.color} icon={config.icon} style={{ borderRadius: 12, padding: '4px 8px' }}>
+        {config.text}
+      </Tag>
+    );
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="container mx-auto px-4">
-        <h1 className="text-3xl font-bold mb-8 text-center text-[#0284c7]">Available Batches</h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {batches.map((batch) => {
-            const status = getRegistrationStatus(batch.id);
-            return (
-              <div key={batch.id} className="bg-white rounded-xl shadow-lg p-6 flex flex-col items-center text-center relative">
-                <div className="text-5xl mb-4">{batch.icon}</div>
-                <h2 className="text-xl font-bold mb-2 text-gray-800">{batch.name}</h2>
-                <p className="text-gray-600 mb-4">{batch.description}</p>
-                <div className="mb-4 text-sm text-gray-500">Start Date: <span className="font-semibold text-[#0284c7]">{batch.start}</span></div>
-                {status ? (
-                  <div className="mt-2">
-                    {getStatusBadge(status)}
-                    {status === 'pending' && (
-                      <p className="text-sm text-gray-500 mt-2">Trainer will contact you shortly</p>
+    <div className="container py-4">
+      <Title level={2} className="text-center mb-4">Available Batches</Title>
+      <Row gutter={[24, 24]}>
+        {batches.map((batch) => {
+          const status = getRegistrationStatus(batch.id);
+          return (
+            <Col xs={24} md={12} lg={8} key={batch.id}>
+              <Card
+                hoverable
+                bordered={false}
+                style={{
+                  borderRadius: 12,
+                  boxShadow: '0 2px 8px #f0f1f2',
+                }}
+                bodyStyle={{ padding: '16px' }}
+              >
+                <div className="text-center">
+                  <div style={{ fontSize: 48, marginBottom: 16 }}>{batch.icon}</div>
+                  <Title level={4} style={{ marginBottom: 8 }}>{batch.name}</Title>
+                  <Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
+                    {batch.description}
+                  </Text>
+                  <Space direction="vertical" size={8} style={{ width: '100%' }}>
+                    <Text type="secondary">
+                      <CalendarOutlined style={{ marginRight: 8 }} />
+                      Start Date: <Text strong>{batch.start}</Text>
+                    </Text>
+                    {status ? (
+                      <div>
+                        {getStatusTag(status)}
+                        {status === 'pending' && (
+                          <Text type="secondary" style={{ display: 'block', marginTop: 8 }}>
+                            Trainer will contact you shortly
+                          </Text>
+                        )}
+                      </div>
+                    ) : (
+                      <Button
+                        type="primary"
+                        onClick={() => handleJoin(batch)}
+                        style={{ width: '100%' }}
+                      >
+                        Join Batch
+                      </Button>
                     )}
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => handleJoin(batch)}
-                    className="px-6 py-2 bg-[#0284c7] text-white rounded-lg font-semibold hover:bg-[#0369a1] transition-colors shadow"
-                  >
-                    Join
-                  </button>
-                )}
-              </div>
-            );
-          })}
-        </div>
+                  </Space>
+                </div>
+              </Card>
+            </Col>
+          );
+        })}
+      </Row>
 
-        {/* Modal for registration */}
-        {showModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-            <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md relative">
-              <button
-                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl"
-                onClick={() => setShowModal(false)}
-              >
-                ×
-              </button>
-              <h2 className="text-2xl font-bold mb-4 text-[#0284c7]">Register for {selectedBatch?.name}</h2>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                <input
-                  type="text"
-                  value={form.name}
-                  onChange={e => setForm({ ...form, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0284c7]"
-                  placeholder="Enter your full name"
-                />
-              </div>
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
-                <input
-                  type="tel"
-                  value={form.mobile}
-                  onChange={e => setForm({ ...form, mobile: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0284c7]"
-                  placeholder="Enter your mobile number"
-                />
-              </div>
-              <button
-                onClick={handleRegister}
-                disabled={loading}
-                className="w-full px-6 py-3 bg-[#0284c7] text-white rounded-lg font-semibold hover:bg-[#0369a1] transition-colors shadow disabled:opacity-60"
-              >
-                {loading ? 'Registering...' : 'Register'}
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+      <Modal
+        title={
+          <Title level={4} style={{ margin: 0 }}>
+            Register for {selectedBatch?.name}
+          </Title>
+        }
+        open={showModal}
+        onCancel={() => setShowModal(false)}
+        footer={null}
+        width={400}
+        centered
+      >
+        <div className="mt-4">
+          <Input
+            placeholder="Enter your full name"
+            value={form.name}
+            onChange={e => setForm({ ...form, name: e.target.value })}
+            style={{ marginBottom: 16 }}
+          />
+          <Input
+            placeholder="Enter your mobile number"
+            value={form.mobile}
+            onChange={e => setForm({ ...form, mobile: e.target.value })}
+            style={{ marginBottom: 24 }}
+          />
+          <Button
+            type="primary"
+            onClick={handleRegister}
+            loading={loading}
+            block
+          >
+            {loading ? 'Registering...' : 'Register'}
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 } 

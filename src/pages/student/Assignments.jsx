@@ -5,22 +5,34 @@ import toast from 'react-hot-toast';
 import PracticeLayout from '../../components/student/PracticeLayout';
 import ProblemStatement from '../../components/student/ProblemStatement';
 import PracticeSandpack from '../../components/student/PracticeSandpack';
-import { Tab } from '@headlessui/react';
+import { Tabs, Card, Button, Tag, Spin, Typography, Row, Col, Space, Divider } from 'antd';
 import {
-  CalendarIcon,
-  ClockIcon,
-  CheckCircleIcon,
-  PlayIcon,
-  DocumentTextIcon,
-  AcademicCapIcon,
-  BookOpenIcon,
-  ChartBarIcon,
-  ArrowRightIcon,
-} from '@heroicons/react/24/outline';
+  BookOutlined,
+  ClockCircleOutlined,
+  CheckCircleOutlined,
+  PlayCircleOutlined,
+  FileTextOutlined,
+  ReadOutlined,
+  BarChartOutlined,
+  ArrowRightOutlined,
+  CalendarOutlined,
+  LeftOutlined
+} from '@ant-design/icons';
 
-function classNames(...classes) {
-  return classes.filter(Boolean).join(' ');
-}
+const { Title, Text } = Typography;
+
+const getDifficultyTag = (difficulty) => {
+  const colors = {
+    beginner: 'success',
+    intermediate: 'warning',
+    advanced: 'error'
+  };
+  return (
+    <Tag color={colors[difficulty]} style={{ borderRadius: 12, padding: '4px 8px' }}>
+      {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
+    </Tag>
+  );
+};
 
 export default function StudentAssignments() {
   const [assignments, setAssignments] = useState([]);
@@ -59,41 +71,26 @@ export default function StudentAssignments() {
     }
   };
 
-  const getDifficultyBadge = (difficulty) => {
-    const colors = {
-      beginner: 'bg-green-100 text-green-800',
-      intermediate: 'bg-yellow-100 text-yellow-800',
-      advanced: 'bg-red-100 text-red-800'
-    };
-    return (
-      <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${colors[difficulty]}`}>
-        {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
-      </span>
-    );
-  };
-
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#3b82f6]"></div>
+      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '60vh' }}>
+        <Spin size="large" />
       </div>
     );
   }
 
   if (selectedAssignment) {
     return (
-      <div className="h-screen">
-        <div className="flex items-center justify-between p-4 bg-white border-b">
-          <button
+      <div style={{ height: '100vh' }}>
+        <div className="d-flex align-items-center justify-content-between p-3 bg-white border-bottom">
+          <Button
+            type="text"
+            icon={<LeftOutlined />}
             onClick={() => setSelectedAssignment(null)}
-            className="flex items-center text-gray-600 hover:text-[#3b82f6] transition-colors"
           >
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
             Back to Assignments
-          </button>
-          <h1 className="text-xl font-semibold text-gray-900">{selectedAssignment.title}</h1>
+          </Button>
+          <Title level={4} style={{ margin: 0 }}>{selectedAssignment.title}</Title>
         </div>
         <PracticeLayout>
           <ProblemStatement markdown={selectedAssignment.problemStatement} />
@@ -103,129 +100,184 @@ export default function StudentAssignments() {
     );
   }
 
-  return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">My Assignments</h1>
-          <p className="text-gray-600 mt-1">Track and manage your learning progress</p>
-        </div>
-        <div className="flex items-center space-x-2 text-sm text-gray-600 bg-gray-50 px-4 py-2 rounded-lg">
-          <AcademicCapIcon className="h-5 w-5 text-[#3b82f6]" />
-          <span>{assignments.length} Total Assignments</span>
-        </div>
-      </div>
-
-      <Tab.Group>
-        <Tab.List className="flex space-x-1 rounded-xl bg-gray-100 p-1 mb-8">
-          <Tab
-            className={({ selected }) =>
-              classNames(
-                'w-full rounded-lg py-2.5 text-sm font-medium leading-5 flex items-center justify-center space-x-2',
-                'ring-white ring-opacity-60 ring-offset-2 ring-offset-[#3b82f6] focus:outline-none focus:ring-2',
-                selected
-                  ? 'bg-white text-[#3b82f6] shadow'
-                  : 'text-gray-600 hover:bg-white/[0.12] hover:text-[#3b82f6]'
-              )
-            }
-          >
-            <DocumentTextIcon className="h-5 w-5" />
-            <span>All Assignments</span>
-          </Tab>
-          <Tab
-            className={({ selected }) =>
-              classNames(
-                'w-full rounded-lg py-2.5 text-sm font-medium leading-5 flex items-center justify-center space-x-2',
-                'ring-white ring-opacity-60 ring-offset-2 ring-offset-[#3b82f6] focus:outline-none focus:ring-2',
-                selected
-                  ? 'bg-white text-[#3b82f6] shadow'
-                  : 'text-gray-600 hover:bg-white/[0.12] hover:text-[#3b82f6]'
-              )
-            }
-          >
-            <ClockIcon className="h-5 w-5" />
-            <span>Pending</span>
-          </Tab>
-          <Tab
-            className={({ selected }) =>
-              classNames(
-                'w-full rounded-lg py-2.5 text-sm font-medium leading-5 flex items-center justify-center space-x-2',
-                'ring-white ring-opacity-60 ring-offset-2 ring-offset-[#3b82f6] focus:outline-none focus:ring-2',
-                selected
-                  ? 'bg-white text-[#3b82f6] shadow'
-                  : 'text-gray-600 hover:bg-white/[0.12] hover:text-[#3b82f6]'
-              )
-            }
-          >
-            <CheckCircleIcon className="h-5 w-5" />
-            <span>Completed</span>
-          </Tab>
-        </Tab.List>
-
-        <Tab.Panels>
-          {['all', 'pending', 'completed'].map((filter) => (
-            <Tab.Panel key={filter}>
-              <div className="space-y-4">
-                {getFilteredAssignments(filter).map((assignment) => (
-                  <div
-                    key={assignment.id}
-                    className="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200"
-                  >
-                    <div className="p-6">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-3 mb-2">
-                            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-[#3b82f6] to-[#1e3a8a] text-white">
-                              <BookOpenIcon className="h-5 w-5" />
-                            </div>
-                            <div>
-                              <h2 className="text-lg font-semibold text-gray-900">{assignment.title}</h2>
-                              <div className="flex items-center space-x-2 mt-1">
-                                {getDifficultyBadge(assignment.difficulty)}
-                                <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-                                  assignment.submitted
-                                    ? 'bg-green-100 text-green-800'
-                                    : 'bg-yellow-100 text-yellow-800'
-                                }`}>
-                                  {assignment.submitted ? 'Completed' : 'Pending'}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                          
-                          <p className="text-gray-600 text-sm mb-4 ml-13">{assignment.description}</p>
-                          
-                          <div className="flex items-center space-x-6 text-sm text-gray-500 ml-13">
-                            <div className="flex items-center">
-                              <CalendarIcon className="h-4 w-4 mr-2 text-[#3b82f6]" />
-                              Due: {new Date(assignment.dueDate).toLocaleDateString()}
-                            </div>
-                            {assignment.submitted && (
-                              <div className="flex items-center">
-                                <CheckCircleIcon className="h-4 w-4 mr-2 text-green-500" />
-                                Submitted: {new Date(assignment.submittedAt).toLocaleDateString()}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        
-                        <button
-                          onClick={() => setSelectedAssignment(assignment)}
-                          className="ml-4 flex items-center px-4 py-2 bg-gradient-to-r from-[#3b82f6] to-[#1e3a8a] text-white rounded-lg hover:from-[#1e3a8a] hover:to-[#3b82f6] transition-all duration-300 shadow-sm hover:shadow-md"
-                        >
-                          <PlayIcon className="h-4 w-4 mr-2" />
-                          {assignment.submitted ? 'Review' : 'Start'}
-                          <ArrowRightIcon className="h-4 w-4 ml-2" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Tab.Panel>
+  const items = [
+    {
+      key: 'all',
+      label: (
+        <Space>
+          <FileTextOutlined />
+          All Assignments
+        </Space>
+      ),
+      children: (
+        <div className="mt-3">
+          {getFilteredAssignments('all').map((assignment) => (
+            <AssignmentCard
+              key={assignment.id}
+              assignment={assignment}
+              onSelect={setSelectedAssignment}
+            />
           ))}
-        </Tab.Panels>
-      </Tab.Group>
+        </div>
+      ),
+    },
+    {
+      key: 'pending',
+      label: (
+        <Space>
+          <ClockCircleOutlined />
+          Pending
+        </Space>
+      ),
+      children: (
+        <div className="mt-3">
+          {getFilteredAssignments('pending').map((assignment) => (
+            <AssignmentCard
+              key={assignment.id}
+              assignment={assignment}
+              onSelect={setSelectedAssignment}
+            />
+          ))}
+        </div>
+      ),
+    },
+    {
+      key: 'completed',
+      label: (
+        <Space>
+          <CheckCircleOutlined />
+          Completed
+        </Space>
+      ),
+      children: (
+        <div className="mt-3">
+          {getFilteredAssignments('completed').map((assignment) => (
+            <AssignmentCard
+              key={assignment.id}
+              assignment={assignment}
+              onSelect={setSelectedAssignment}
+            />
+          ))}
+        </div>
+      ),
+    },
+  ];
+
+  return (
+    <div className="container py-4">
+      <Row justify="space-between" align="middle" className="mb-4">
+        <Col>
+          <Title level={2} style={{ margin: 0, color: '#222' }}>My Assignments</Title>
+          <Text type="secondary">Track and manage your learning progress</Text>
+        </Col>
+        <Col>
+          <Card
+            bordered={false}
+            style={{
+              background: '#f5f6fa',
+              borderRadius: 12,
+            }}
+          >
+            <Space>
+              <ReadOutlined style={{ fontSize: 20 }} />
+              <Text strong>{assignments.length} Total Assignments</Text>
+            </Space>
+          </Card>
+        </Col>
+      </Row>
+
+      <Tabs
+        defaultActiveKey="all"
+        items={items}
+        style={{
+          background: '#fff',
+          borderRadius: 16,
+          boxShadow: '0 2px 8px #f0f1f2',
+        }}
+      />
     </div>
+  );
+}
+
+function AssignmentCard({ assignment, onSelect }) {
+  return (
+    <Card
+      className="mb-3"
+      bordered={false}
+      style={{
+        borderRadius: 12,
+        boxShadow: '0 2px 8px #f0f1f2',
+        transition: 'all 0.3s',
+      }}
+      bodyStyle={{ padding: '8px' }}
+      hoverable
+    >
+      <Row gutter={[16, 16]} align="middle">
+        <Col xs={24} md={18}>
+          <Space direction="vertical" size={12} style={{ width: '100%' }}>
+            <Space align="start">
+              <div
+                style={{
+                  width: 40,
+                  height: 40,
+                  background: 'linear-gradient(135deg, var(--primary-color) 0%, #1e3a8a 100%)',
+                  borderRadius: 8,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <BookOutlined style={{ fontSize: 20, color: '#fff' }} />
+              </div>
+              <div>
+                <Title level={4} style={{ margin: 0, fontSize: '18px' }}>{assignment.title}</Title>
+                <Space size={8} className="mt-1">
+                  {getDifficultyTag(assignment.difficulty)}
+                  <Tag
+                    color={assignment.submitted ? 'success' : 'warning'}
+                    style={{ borderRadius: 12, padding: '4px 8px' }}
+                  >
+                    {assignment.submitted ? 'Completed' : 'Pending'}
+                  </Tag>
+                </Space>
+              </div>
+            </Space>
+
+            <Text type="secondary" style={{ marginLeft: 56 }}>{assignment.description}</Text>
+
+            <Space size={24} style={{ marginLeft: 56 }}>
+              <Space>
+                <CalendarOutlined />
+                <Text type="secondary">Due: {new Date(assignment.dueDate).toLocaleDateString()}</Text>
+              </Space>
+              {assignment.submitted && (
+                <Space>
+                  <CheckCircleOutlined style={{ color: '#52c41a' }} />
+                  <Text type="secondary">
+                    Submitted: {new Date(assignment.submittedAt).toLocaleDateString()}
+                  </Text>
+                </Space>
+              )}
+            </Space>
+          </Space>
+        </Col>
+        <Col xs={24} md={6} style={{ textAlign: 'right' }}>
+          <Button
+            type="primary"
+            icon={<PlayCircleOutlined />}
+            onClick={() => onSelect(assignment)}
+            size="middle"
+            style={{
+              borderRadius: 6,
+              height: 36,
+              padding: '0 16px',
+            }}
+          >
+            {assignment.submitted ? 'Review' : 'Start'}
+            <ArrowRightOutlined />
+          </Button>
+        </Col>
+      </Row>
+    </Card>
   );
 }

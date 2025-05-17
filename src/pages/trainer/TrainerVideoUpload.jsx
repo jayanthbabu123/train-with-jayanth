@@ -1,6 +1,54 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { 
+  Form, 
+  Input, 
+  Button, 
+  Select, 
+  Card, 
+  Row, 
+  Col, 
+  message, 
+  Tabs,
+  Table,
+  Space,
+  Modal,
+  Tag,
+  Typography,
+  Popconfirm,
+  Tooltip,
+  List,
+  Switch
+} from "antd";
+import { 
+  collection, 
+  addDoc, 
+  serverTimestamp, 
+  getDocs, 
+  doc, 
+  updateDoc, 
+  deleteDoc,
+  query,
+  where,
+  orderBy
+} from "firebase/firestore";
+import { 
+  EditOutlined, 
+  DeleteOutlined, 
+  EyeOutlined,
+  UploadOutlined,
+  VideoCameraOutlined,
+  ClockCircleOutlined,
+  CalendarOutlined,
+  PlayCircleOutlined,
+  SearchOutlined,
+  UserOutlined
+} from '@ant-design/icons';
+import { db } from "../../services/firebase";
+import { useAuth } from "../../contexts/AuthContext";
 
-const LANGUAGES = ["English", "Hindi", "Telugu", "Tamil", "Other"];
+const { Option } = Select;
+const { Title, Text } = Typography;
+const { TabPane } = Tabs;
 
 function getYoutubeEmbedUrl(url) {
   const match = url.match(
@@ -9,188 +57,584 @@ function getYoutubeEmbedUrl(url) {
   return match ? `https://www.youtube.com/embed/${match[1]}` : "";
 }
 
+function getYoutubeThumbnail(url) {
+  const match = url.match(
+    /(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/
+  );
+  return match ? `https://img.youtube.com/vi/${match[1]}/maxresdefault.jpg` : "";
+}
+
+const LANGUAGES = ["JavaScript", "HTML", "CSS", "Bootstrap", "React", "Node.js", "Express", "MongoDB", "Github"];
+
 export default function TrainerVideoUpload() {
-  const [form, setForm] = useState({
-    title: "",
-    link: "",
-    description: "",
-    language: "",
-    batch: "",
-  });
-  const [errors, setErrors] = useState({});
-  const [submitting, setSubmitting] = useState(false);
+  const [form] = Form.useForm();
+  const [embedUrl, setEmbedUrl] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [videos, setVideos] = useState([]);
+  const [selectedVideo, setSelectedVideo] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const { currentUser } = useAuth();
+  const [activeTab, setActiveTab] = useState('videos');
 
-  const embedUrl = getYoutubeEmbedUrl(form.link);
+  useEffect(() => {
+    fetchVideos();
+  }, []);
 
-  function handleChange(e) {
-    setForm({ ...form, [e.target.name]: e.target.value });
-    setErrors({ ...errors, [e.target.name]: "" });
-  }
+  const fetchVideos = async () => {
+    try {
+      setLoading(true);
+      console.log('Fetching all videos...');
+      
+      // Get all videos
+      const videosRef = collection(db, 'videos');
+      const q = query(
+        videosRef,
+        orderBy('uploadDate', 'desc')
+      );
+      
+      const videosSnapshot = await getDocs(q);
+      const videosList = videosSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
 
-  function validate() {
-    const errs = {};
-    if (!form.title.trim()) errs.title = "Title is required";
-    if (!form.link.trim() || !embedUrl)
-      errs.link = "Valid YouTube link required";
-    if (!form.description.trim()) errs.description = "Description is required";
-    if (!form.language) errs.language = "Language is required";
-    if (!form.batch.trim()) errs.batch = "Batch number is required";
-    return errs;
-  }
-
-  async function handleSubmit(e) {
-    e.preventDefault();
-    const errs = validate();
-    if (Object.keys(errs).length) {
-      setErrors(errs);
-      return;
+      console.log('Fetched videos:', videosList);
+      setVideos(videosList);
+    } catch (error) {
+      console.error("Error fetching videos:", error);
+      message.error("Failed to fetch videos");
+    } finally {
+      setLoading(false);
     }
-    setSubmitting(true);
-    // TODO: Upload logic here (API call)
-    setTimeout(() => {
-      setSubmitting(false);
-      alert("Video uploaded successfully!");
-      setForm({
-        title: "",
-        link: "",
-        description: "",
-        language: "",
-        batch: "",
-      });
-    }, 1200);
-  }
+  };
+
+  const handleVideoEdit = (video) => {
+    setIsEditMode(true);
+    form.setFieldsValue({
+      id: video.id,
+      title: video.title,
+      description: video.description,
+      link: video.youtubeUrl,
+      language: video.category,
+      batch: video.batchId
+    });
+    setEmbedUrl(video.embedUrl);
+    setActiveTab('upload');
+  };
+
+  const handleVideoSubmit = async (values) => {
+    try {
+      setLoading(true);
+      
+      const youtubeVideoId = values.link.match(
+        /(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/
+      )?.[1];
+
+      if (!youtubeVideoId) {
+        throw new Error("Invalid YouTube URL");
+      }
+
+      const videoMetadata = {
+        title: values.title,
+        description: values.description,
+        youtubeUrl: values.link,
+        embedUrl: getYoutubeEmbedUrl(values.link),
+        thumbnail: getYoutubeThumbnail(values.link),
+        category: values.language,
+        batchId: values.batch,
+        duration: 0,
+        uploadDate: serverTimestamp(),
+        uploadedBy: currentUser.uid,
+        uploadedByName: currentUser.displayName || currentUser.email,
+      };
+
+      if (isEditMode && values.id) {
+        const videoDocumentRef = doc(db, 'videos', values.id);
+        await updateDoc(videoDocumentRef, {
+          ...videoMetadata,
+          uploadDate: serverTimestamp()
+        });
+        message.success("Video updated successfully!");
+      } else {
+        await addDoc(collection(db, 'videos'), videoMetadata);
+        message.success("Video uploaded successfully!");
+      }
+
+      form.resetFields();
+      setEmbedUrl("");
+      setIsEditMode(false);
+      setActiveTab('videos');
+      fetchVideos();
+    } catch (error) {
+      console.error("Error handling video:", error);
+      message.error("Failed to process video. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEditCancel = () => {
+    setActiveTab('videos');
+    setIsEditMode(false);
+    form.resetFields();
+    setEmbedUrl("");
+  };
+
+  const handleVideoPreview = (video) => {
+    setSelectedVideo(video);
+    setIsModalVisible(true);
+  };
+
+  const handleVideoDelete = async (videoId) => {
+    try {
+      await deleteDoc(doc(db, 'videos', videoId));
+      message.success("Video deleted successfully!");
+      fetchVideos();
+    } catch (error) {
+      console.error("Error deleting video:", error);
+      message.error("Failed to delete video");
+    }
+  };
+
+  const handleVideoSearch = (value) => {
+    setSearchText(value);
+  };
+
+  const handleCategoryFilter = (value) => {
+    setSelectedCategory(value);
+  };
+
+  const handleOwnVideosFilter = (checked) => {
+    setShowOnlyMine(checked);
+  };
+
+  const handleYouTubeLinkChange = (e) => {
+    const url = e.target.value;
+    setEmbedUrl(getYoutubeEmbedUrl(url));
+  };
+
+  const columns = [
+    {
+      title: 'Video',
+      dataIndex: 'thumbnail',
+      key: 'thumbnail',
+      width: 120,
+      render: (thumbnail, record) => (
+        <div style={{ position: 'relative', width: 120, height: 68 }}>
+          <img
+            src={thumbnail}
+            alt={record.title}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 4 }}
+          />
+          <div
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              background: 'rgba(0, 0, 0, 0.6)',
+              borderRadius: '50%',
+              padding: 8,
+              cursor: 'pointer'
+            }}
+            onClick={() => handleVideoPreview(record)}
+          >
+            <PlayCircleOutlined style={{ fontSize: 20, color: '#fff' }} />
+          </div>
+        </div>
+      )
+    },
+    {
+      title: 'Title',
+      dataIndex: 'title',
+      key: 'title',
+      render: (text, record) => (
+        <Space direction="vertical" size={4}>
+          <Text strong>{text}</Text>
+          <Space size={8}>
+            <Tag color="blue">{record.category}</Tag>
+            <Tag color="green">{record.batchId}</Tag>
+            {record.uploadedBy === currentUser.uid && (
+              <Tag color="purple">Your Upload</Tag>
+            )}
+          </Space>
+        </Space>
+      )
+    },
+    {
+      title: 'Uploaded By',
+      dataIndex: 'uploadedByName',
+      key: 'uploadedByName',
+      render: (text, record) => (
+        <Space>
+          <UserOutlined />
+          <Text>{text}</Text>
+        </Space>
+      )
+    },
+    {
+      title: 'Upload Date',
+      dataIndex: 'uploadDate',
+      key: 'uploadDate',
+      render: (timestamp) => (
+        <Space>
+          <CalendarOutlined />
+          <Text>{timestamp?.toDate().toLocaleDateString()}</Text>
+        </Space>
+      )
+    },
+    {
+      title: 'Actions',
+      key: 'actions',
+      width: 120,
+      render: (_, record) => (
+        <Space>
+          <Tooltip title="Preview">
+            <Button 
+              type="text" 
+              icon={<EyeOutlined />} 
+              onClick={() => handleVideoPreview(record)}
+            />
+          </Tooltip>
+          {record.uploadedBy === currentUser.uid && (
+            <>
+              <Tooltip title="Edit">
+                <Button 
+                  type="text" 
+                  icon={<EditOutlined />} 
+                  onClick={() => handleVideoEdit(record)}
+                />
+              </Tooltip>
+              <Tooltip title="Delete">
+                <Popconfirm
+                  title="Delete this video?"
+                  description="Are you sure you want to delete this video?"
+                  onConfirm={() => handleVideoDelete(record.id)}
+                  okText="Yes"
+                  cancelText="No"
+                >
+                  <Button 
+                    type="text" 
+                    danger 
+                    icon={<DeleteOutlined />}
+                  />
+                </Popconfirm>
+              </Tooltip>
+            </>
+          )}
+        </Space>
+      )
+    }
+  ];
+
+  const [searchText, setSearchText] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [showOnlyMine, setShowOnlyMine] = useState(false);
+
+  const filteredVideos = videos.filter(video => {
+    const matchesSearch = video.title.toLowerCase().includes(searchText.toLowerCase()) ||
+                         video.description.toLowerCase().includes(searchText.toLowerCase());
+    const matchesCategory = selectedCategory === 'all' || video.category === selectedCategory;
+    const matchesMine = !showOnlyMine || video.uploadedBy === currentUser.uid;
+    return matchesSearch && matchesCategory && matchesMine;
+  });
 
   return (
-    <div className="max-w-3xl mx-auto py-10 px-4">
-      <div className="bg-white rounded-2xl shadow-lg p-8 flex flex-col gap-8">
-        <h1 className="text-2xl font-bold text-[#1e3a8a] mb-2">
-          Upload Class Video
-        </h1>
-        <form
-          className="grid grid-cols-1 md:grid-cols-2 gap-6"
-          onSubmit={handleSubmit}
-        >
-          <div className="flex flex-col gap-2">
-            <label className="font-semibold text-gray-700">
-              Video Title<span className="text-red-500">*</span>
-            </label>
-            <input
-              name="title"
-              value={form.title}
-              onChange={handleChange}
-              className={`input input-bordered ${
-                errors.title ? "border-red-500" : ""
-              }`}
-              placeholder="Enter video title"
-              required
-            />
-            {errors.title && (
-              <span className="text-xs text-red-500">{errors.title}</span>
-            )}
-          </div>
-          <div className="flex flex-col gap-2">
-            <label className="font-semibold text-gray-700">
-              YouTube Link<span className="text-red-500">*</span>
-            </label>
-            <input
-              name="link"
-              value={form.link}
-              onChange={handleChange}
-              className={`input input-bordered ${
-                errors.link ? "border-red-500" : ""
-              }`}
-              placeholder="Paste YouTube video link"
-              required
-            />
-            {errors.link && (
-              <span className="text-xs text-red-500">{errors.link}</span>
-            )}
-          </div>
-          <div className="flex flex-col gap-2 md:col-span-2">
-            <label className="font-semibold text-gray-700">
-              Description<span className="text-red-500">*</span>
-            </label>
-            <textarea
-              name="description"
-              value={form.description}
-              onChange={handleChange}
-              className={`input input-bordered min-h-[80px] ${
-                errors.description ? "border-red-500" : ""
-              }`}
-              placeholder="Describe the video content"
-              required
-            />
-            {errors.description && (
-              <span className="text-xs text-red-500">{errors.description}</span>
-            )}
-          </div>
-          <div className="flex flex-col gap-2">
-            <label className="font-semibold text-gray-700">
-              Language<span className="text-red-500">*</span>
-            </label>
-            <select
-              name="language"
-              value={form.language}
-              onChange={handleChange}
-              className={`input input-bordered ${
-                errors.language ? "border-red-500" : ""
-              }`}
-              required
-            >
-              <option value="">Select language</option>
-              {LANGUAGES.map((lang) => (
-                <option key={lang} value={lang}>
-                  {lang}
-                </option>
-              ))}
-            </select>
-            {errors.language && (
-              <span className="text-xs text-red-500">{errors.language}</span>
-            )}
-          </div>
-          <div className="flex flex-col gap-2">
-            <label className="font-semibold text-gray-700">
-              Batch Number<span className="text-red-500">*</span>
-            </label>
-            <input
-              name="batch"
-              value={form.batch}
-              onChange={handleChange}
-              className={`input input-bordered ${
-                errors.batch ? "border-red-500" : ""
-              }`}
-              placeholder="e.g. 2024A"
-              required
-            />
-            {errors.batch && (
-              <span className="text-xs text-red-500">{errors.batch}</span>
-            )}
-          </div>
-          <div className="md:col-span-2 flex flex-col items-center gap-2">
-            {embedUrl ? (
-              <iframe
-                className="rounded-xl border shadow-md w-full aspect-video"
-                src={embedUrl}
-                title="YouTube Preview"
-                allowFullScreen
-              />
-            ) : (
-              <div className="w-full aspect-video flex items-center justify-center text-gray-400 bg-gray-100 rounded-xl border">
-                Paste a valid YouTube link to preview
-              </div>
-            )}
-          </div>
-          <div className="md:col-span-2 flex justify-end">
-            <button
-              type="submit"
-              className="bg-[#3b82f6] hover:bg-[#1e3a8a] text-white font-semibold px-6 py-2 rounded-lg shadow transition"
-              disabled={submitting}
-            >
-              {submitting ? "Uploading..." : "Upload Video"}
-            </button>
-          </div>
-        </form>
+    <div style={{ 
+      padding: '32px',
+      maxWidth: '1400px',
+      margin: '0 auto',
+      minHeight: 'calc(100vh - 64px)',
+      background: '#f8f9fa'
+    }}>
+      <div style={{ 
+        marginBottom: '32px',
+        textAlign: 'left'
+      }}>
+        <Title level={2} style={{ margin: 0 }}>Video Management</Title>
+        <Text type="secondary">Upload and manage your training videos</Text>
       </div>
+
+      <Card 
+        style={{ 
+          borderRadius: '12px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+        }}
+        bodyStyle={{ padding: 0 }}
+      >
+        <Tabs 
+          activeKey={activeTab}
+          onChange={setActiveTab}
+          type="card"
+          size="large"
+          style={{ 
+            background: '#fff',
+            padding: '16px 16px 0',
+            margin: 0
+          }}
+          tabBarStyle={{ 
+            margin: 0,
+            borderBottom: '1px solid #f0f0f0'
+          }}
+        >
+          <TabPane 
+            tab={
+              <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <VideoCameraOutlined style={{ fontSize: '18px' }} />
+                My Videos
+              </span>
+            } 
+            key="videos"
+          >
+            <div style={{ padding: '24px' }}>
+              <div style={{ 
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '24px',
+                gap: '16px',
+                flexWrap: 'wrap'
+              }}>
+                <Input
+                  placeholder="Search videos..."
+                  prefix={<SearchOutlined />}
+                  style={{ width: '300px' }}
+                  size="large"
+                  onChange={(e) => handleVideoSearch(e.target.value)}
+                  value={searchText}
+                />
+                <Select
+                  placeholder="Filter by category"
+                  style={{ width: '200px' }}
+                  size="large"
+                  value={selectedCategory}
+                  onChange={handleCategoryFilter}
+                >
+                  <Option value="all">All Categories</Option>
+                  {LANGUAGES.map(category => (
+                    <Option key={category} value={category}>{category}</Option>
+                  ))}
+                </Select>
+                <Switch
+                  checkedChildren="My Videos"
+                  unCheckedChildren="All Videos"
+                  checked={showOnlyMine}
+                  onChange={handleOwnVideosFilter}
+                />
+              </div>
+
+              <Table
+                columns={columns}
+                dataSource={filteredVideos}
+                rowKey="id"
+                loading={loading}
+                pagination={{ 
+                  pageSize: 8,
+                  showSizeChanger: true,
+                  showTotal: (total) => `Total ${total} videos`
+                }}
+                scroll={{ x: 'max-content' }}
+              />
+            </div>
+          </TabPane>
+
+          <TabPane 
+            tab={
+              <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <UploadOutlined style={{ fontSize: '18px' }} />
+                {isEditMode ? 'Edit Video' : 'Upload Video'}
+              </span>
+            } 
+            key="upload"
+          >
+            <div style={{ padding: '24px' }}>
+              <Form
+                form={form}
+                layout="vertical"
+                onFinish={handleVideoSubmit}
+                autoComplete="off"
+                initialValues={{ language: "", batch: "" }}
+              >
+                <Row gutter={[24, 16]}>
+                  <Form.Item name="id" hidden>
+                    <Input />
+                  </Form.Item>
+                  <Col xs={24} md={12}>
+                    <Form.Item
+                      label="Video Title"
+                      name="title"
+                      rules={[{ required: true, message: "Please enter the video title" }]}
+                    >
+                      <Input placeholder="Enter video title" size="large" />
+                    </Form.Item>
+                  </Col>
+                  <Col xs={24} md={12}>
+                    <Form.Item
+                      label="YouTube Link"
+                      name="link"
+                      rules={[
+                        { required: true, message: "Please enter a valid YouTube link" },
+                        {
+                          validator: (_, value) =>
+                            !value || getYoutubeEmbedUrl(value)
+                              ? Promise.resolve()
+                              : Promise.reject("Enter a valid YouTube link"),
+                        },
+                      ]}
+                    >
+                      <Input 
+                        placeholder="Paste YouTube video link" 
+                        onChange={handleYouTubeLinkChange}
+                        size="large"
+                      />
+                    </Form.Item>
+                  </Col>
+                  <Col xs={24}>
+                    <Form.Item
+                      label="Description"
+                      name="description"
+                      rules={[{ required: true, message: "Please enter a description" }]}
+                    >
+                      <Input.TextArea 
+                        rows={2} 
+                        placeholder="Describe the video content"
+                        style={{ resize: 'none' }}
+                      />
+                    </Form.Item>
+                  </Col>
+                  <Col xs={24} md={12}>
+                    <Form.Item
+                      label="Language"
+                      name="language"
+                      rules={[{ required: true, message: "Please select a language" }]}
+                    >
+                      <Select 
+                        placeholder="Select language"
+                        size="large"
+                      >
+                        {LANGUAGES.map((lang) => (
+                          <Option key={lang} value={lang}>
+                            {lang}
+                          </Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                  </Col>
+                  <Col xs={24} md={12}>
+                    <Form.Item
+                      label="Batch Number"
+                      name="batch"
+                      rules={[{ required: true, message: "Please enter the batch number" }]}
+                    >
+                      <Input 
+                        placeholder="e.g. 2024A"
+                        size="large"
+                      />
+                    </Form.Item>
+                  </Col>
+                  <Col xs={24}>
+                    <div style={{ 
+                      marginBottom: '16px',
+                      borderRadius: '8px',
+                      overflow: 'hidden',
+                      border: '1px solid #d9d9d9'
+                    }}>
+                      {embedUrl ? (
+                        <div style={{ 
+                          width: '100%',
+                          aspectRatio: '16/9',
+                          position: 'relative'
+                        }}>
+                          <iframe
+                            style={{ 
+                              position: 'absolute',
+                              top: 0,
+                              left: 0,
+                              width: '100%',
+                              height: '100%',
+                              border: 'none'
+                            }}
+                            src={embedUrl}
+                            title="YouTube Preview"
+                            allowFullScreen
+                          />
+                        </div>
+                      ) : (
+                        <div style={{ 
+                          height: '400px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          background: '#fafafa'
+                        }}>
+                          <Text type="secondary">
+                            Paste a valid YouTube link to preview
+                          </Text>
+                        </div>
+                      )}
+                    </div>
+                  </Col>
+                  <Col xs={24} style={{ textAlign: 'right' }}>
+                    <Space>
+                      <Button 
+                        onClick={handleEditCancel}
+                        size="large"
+                      >
+                        Cancel
+                      </Button>
+                      <Button 
+                        type="primary" 
+                        htmlType="submit" 
+                        loading={loading} 
+                        size="large"
+                        style={{ minWidth: '120px' }}
+                      >
+                        {loading ? "Processing..." : isEditMode ? "Update Video" : "Upload Video"}
+                      </Button>
+                    </Space>
+                  </Col>
+                </Row>
+              </Form>
+            </div>
+          </TabPane>
+        </Tabs>
+      </Card>
+
+      {/* Preview Modal */}
+      <Modal
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <PlayCircleOutlined style={{ fontSize: '20px' }} />
+            {selectedVideo?.title}
+          </div>
+        }
+        open={!!selectedVideo}
+        onCancel={() => setSelectedVideo(null)}
+        footer={null}
+        width="80%"
+        style={{ top: 20 }}
+        bodyStyle={{ padding: '24px' }}
+      >
+        {selectedVideo && (
+          <div style={{ 
+            width: '100%',
+            aspectRatio: '16/9',
+            borderRadius: '8px',
+            overflow: 'hidden'
+          }}>
+            <iframe
+              width="100%"
+              height="100%"
+              src={selectedVideo.embedUrl}
+              title={selectedVideo.title}
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }

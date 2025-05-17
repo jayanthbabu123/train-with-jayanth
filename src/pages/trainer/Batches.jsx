@@ -2,6 +2,10 @@ import { useState, useEffect } from 'react';
 import { collection, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import toast from 'react-hot-toast';
+import { Card, Button, Tag, Table, Modal, Spin, Space } from 'antd';
+import { TeamOutlined, CheckCircleTwoTone, ClockCircleTwoTone, CloseCircleTwoTone } from '@ant-design/icons';
+
+const BRAND_COLOR = '#0067b8';
 
 const batches = [
   {
@@ -38,6 +42,7 @@ export default function TrainerBatches() {
   const [registrations, setRegistrations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedBatch, setSelectedBatch] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
     fetchRegistrations();
@@ -77,14 +82,14 @@ export default function TrainerBatches() {
     return registrations.filter(reg => reg.batchId === batchId);
   };
 
-  const getStatusBadge = (status) => {
+  const getStatusTag = (status) => {
     switch (status) {
       case 'pending':
-        return <span className="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Pending</span>;
+        return <Tag color="gold" icon={<ClockCircleTwoTone twoToneColor="#faad14" />}>Pending</Tag>;
       case 'approved':
-        return <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Approved</span>;
+        return <Tag color="green" icon={<CheckCircleTwoTone twoToneColor="#52c41a" />}>Approved</Tag>;
       case 'rejected':
-        return <span className="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Rejected</span>;
+        return <Tag color="red" icon={<CloseCircleTwoTone twoToneColor="#ff4d4f" />}>Rejected</Tag>;
       default:
         return null;
     }
@@ -92,127 +97,128 @@ export default function TrainerBatches() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0284c7]"></div>
+      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '60vh' }}>
+        <Spin size="large" />
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Batch Management</h1>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="container py-4">
+      <h1 style={{ color: 'var(--ant-primary-color)', fontWeight: 700, fontSize: 28, marginBottom: 24 }}>
+        Batch Management
+      </h1>
+      <div className="row g-4">
         {batches.map((batch) => {
           const batchRegistrations = getRegistrationsForBatch(batch.id);
           const pendingCount = batchRegistrations.filter(reg => reg.status === 'pending').length;
-          
           return (
-            <div key={batch.id} className="bg-white rounded-lg shadow-lg overflow-hidden">
-              <div className="p-6">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h2 className="text-xl font-semibold text-gray-900">{batch.name}</h2>
-                    <p className="text-gray-600 text-sm mt-1">Start Date: {batch.start}</p>
-                  </div>
-                  <div className="text-4xl">{batch.icon}</div>
+            <div className="col-12 col-md-6 col-lg-4" key={batch.id}>
+              <Card
+                bordered={false}
+                style={{ borderRadius: 12, boxShadow: '0 2px 8px #f0f1f2' }}
+                headStyle={{ background: '#f5f6fa', borderRadius: '12px 12px 0 0' }}
+                title={
+                  <Space>
+                    <span style={{ fontSize: 24 }}>{batch.icon}</span>
+                    <span style={{ fontWeight: 600 }}>{batch.name}</span>
+                  </Space>
+                }
+                extra={<Tag color="blue">Start: {batch.start}</Tag>}
+              >
+                <div style={{ color: '#888', marginBottom: 8 }}>{batch.description}</div>
+                <div className="d-flex justify-content-between align-items-center mb-2">
+                  <span style={{ color: '#555' }}>Total Registrations:</span>
+                  <span style={{ fontWeight: 600 }}>{batchRegistrations.length}</span>
                 </div>
-
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">Total Registrations:</span>
-                    <span className="font-semibold">{batchRegistrations.length}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">Pending Reviews:</span>
-                    <span className="font-semibold text-yellow-600">{pendingCount}</span>
-                  </div>
+                <div className="d-flex justify-content-between align-items-center mb-2">
+                  <span style={{ color: '#555' }}>Pending Reviews:</span>
+                  <span style={{ fontWeight: 600, color: '#faad14' }}>{pendingCount}</span>
                 </div>
-
-                <button
-                  onClick={() => setSelectedBatch(batch)}
-                  className="mt-4 w-full px-4 py-2 bg-[#0284c7] text-white rounded-lg hover:bg-[#0369a1] transition-colors"
+                <Button
+                  type="primary"
+                  block
+                  style={{ marginTop: 16, fontWeight: 600 }}
+                  onClick={() => {
+                    setSelectedBatch(batch);
+                    setModalOpen(true);
+                  }}
                 >
                   View Registrations
-                </button>
-              </div>
+                </Button>
+              </Card>
             </div>
           );
         })}
       </div>
 
       {/* Registration Details Modal */}
-      {selectedBatch && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">
-                {selectedBatch.name} - Registrations
-              </h2>
-              <button
-                onClick={() => setSelectedBatch(null)}
-                className="text-gray-400 hover:text-gray-600 text-2xl"
-              >
-                ×
-              </button>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mobile</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Registered On</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {getRegistrationsForBatch(selectedBatch.id).map((registration) => (
-                    <tr key={registration.id}>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{registration.name}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{registration.mobile}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
-                          {registration.registeredAt?.toDate().toLocaleDateString()}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {getStatusBadge(registration.status)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        {registration.status === 'pending' && (
-                          <div className="space-x-2">
-                            <button
-                              onClick={() => handleStatusUpdate(registration.id, 'approved')}
-                              className="text-green-600 hover:text-green-900"
-                            >
-                              Approve
-                            </button>
-                            <button
-                              onClick={() => handleStatusUpdate(registration.id, 'rejected')}
-                              className="text-red-600 hover:text-red-900"
-                            >
-                              Reject
-                            </button>
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      )}
+      <Modal
+        open={modalOpen}
+        onCancel={() => setModalOpen(false)}
+        footer={null}
+        width={800}
+        title={
+          <span style={{ fontWeight: 700, fontSize: 22 }}>
+            {selectedBatch?.name} - Registrations
+          </span>
+        }
+        bodyStyle={{ maxHeight: '70vh', overflowY: 'auto' }}
+        destroyOnClose
+      >
+        <Table
+          dataSource={selectedBatch ? getRegistrationsForBatch(selectedBatch.id) : []}
+          rowKey="id"
+          pagination={false}
+          columns={[
+            {
+              title: 'Name',
+              dataIndex: 'name',
+              key: 'name',
+              render: (text) => <span style={{ fontWeight: 500 }}>{text}</span>,
+            },
+            {
+              title: 'Mobile',
+              dataIndex: 'mobile',
+              key: 'mobile',
+            },
+            {
+              title: 'Registered On',
+              dataIndex: 'registeredAt',
+              key: 'registeredAt',
+              render: (date) => date?.toDate ? date.toDate().toLocaleDateString() : 'N/A',
+            },
+            {
+              title: 'Status',
+              dataIndex: 'status',
+              key: 'status',
+              render: (status) => getStatusTag(status),
+            },
+            {
+              title: 'Actions',
+              key: 'actions',
+              render: (_, registration) => registration.status === 'pending' && (
+                <Space>
+                  <Button
+                    type="link"
+                    style={{ color: 'green', padding: 0 }}
+                    onClick={() => handleStatusUpdate(registration.id, 'approved')}
+                  >
+                    Approve
+                  </Button>
+                  <Button
+                    type="link"
+                    style={{ color: 'red', padding: 0 }}
+                    onClick={() => handleStatusUpdate(registration.id, 'rejected')}
+                  >
+                    Reject
+                  </Button>
+                </Space>
+              ),
+            },
+          ]}
+        />
+      </Modal>
     </div>
   );
 } 

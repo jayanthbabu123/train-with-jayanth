@@ -33,6 +33,7 @@ import Home from "./pages/Home/Home";
 import StudentPractice from "./pages/student/Practice";
 import StudentBatches from "./pages/student/Batches";
 import TrainerVideoUpload from "./pages/trainer/TrainerVideoUpload";
+import StudentVideos from "./pages/student/Videos";
 
 // Protected Route component
 function ProtectedRoute({ children, allowedRoles }) {
@@ -69,7 +70,7 @@ function AppRoutes() {
                 <Route path="batches" element={<TrainerBatches />} />
                 <Route path="materials" element={<TrainerMaterials />} />
                 <Route path="assignments" element={<TrainerAssignments />} />
-                <Route path="upload" element={<TrainerVideoUpload />} />
+                <Route path="video-upload" element={<TrainerVideoUpload />} />
               </Routes>
             </DashboardLayout>
           </ProtectedRoute>
@@ -89,6 +90,7 @@ function AppRoutes() {
                 <Route path="profile" element={<StudentProfile />} />
                 <Route path="practice" element={<StudentPractice />} />
                 <Route path="batches" element={<StudentBatches />} />
+                <Route path="videos" element={<StudentVideos />} />
               </Routes>
             </DashboardLayout>
           </ProtectedRoute>

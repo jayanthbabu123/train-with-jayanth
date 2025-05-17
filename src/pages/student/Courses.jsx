@@ -3,6 +3,10 @@ import { useAuth } from '../../contexts/AuthContext';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import toast from 'react-hot-toast';
+import { Card, Progress, Button, Row, Col, Typography, Tag, Spin, Space } from 'antd';
+import { ClockCircleOutlined, FileTextOutlined, BookOutlined, RightOutlined } from '@ant-design/icons';
+
+const { Title, Text } = Typography;
 
 export default function StudentCourses() {
   const { currentUser } = useAuth();
@@ -35,75 +39,96 @@ export default function StudentCourses() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0284c7]"></div>
+      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '60vh' }}>
+        <Spin size="large" />
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">My Courses</h1>
-        <p className="text-gray-600 mt-2">Track your learning progress and access course materials</p>
+    <div className="container py-4">
+      <div className="mb-4">
+        <Title level={2} style={{ margin: 0, color: '#222' }}>My Courses</Title>
+        <Text type="secondary">Track your learning progress and access course materials</Text>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <Row gutter={[24, 24]}>
         {courses.map((course) => (
-          <div key={course.id} className="bg-white rounded-lg shadow-lg overflow-hidden">
-            <div className="relative">
-              <div className="h-48 bg-gradient-to-r from-[#0284c7] to-[#0369a1]"></div>
-              <div className="absolute top-4 right-4">
-                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                  course.status === 'active' 
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-gray-100 text-gray-800'
-                }`}>
+          <Col xs={24} md={12} lg={8} key={course.id}>
+            <Card
+              hoverable
+              bordered={false}
+              style={{
+                borderRadius: 12,
+                boxShadow: '0 2px 8px #f0f1f2',
+              }}
+              bodyStyle={{ padding: 0 }}
+            >
+              <div style={{ position: 'relative' }}>
+                <div
+                  style={{
+                    height: 160,
+                    background: 'linear-gradient(90deg, var(--primary-color) 0%, #1e3a8a 100%)',
+                  }}
+                />
+                <Tag
+                  color={course.status === 'active' ? 'success' : 'default'}
+                  style={{
+                    position: 'absolute',
+                    top: 16,
+                    right: 16,
+                    borderRadius: 12,
+                    padding: '4px 8px',
+                  }}
+                >
                   {course.status}
-                </span>
-              </div>
-            </div>
-            
-            <div className="p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">{course.title}</h2>
-              <p className="text-gray-600 text-sm mb-4">{course.description}</p>
-              
-              <div className="space-y-3">
-                <div className="flex items-center text-sm text-gray-600">
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  Progress: {course.progress || 0}%
-                </div>
-                <div className="flex items-center text-sm text-gray-600">
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                  </svg>
-                  {course.assignmentCount || 0} Assignments
-                </div>
+                </Tag>
               </div>
 
-              <div className="mt-6">
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    className="bg-[#0284c7] h-2 rounded-full" 
-                    style={{ width: `${course.progress || 0}%` }}
-                  ></div>
-                </div>
-              </div>
+              <div style={{ padding: '16px' }}>
+                <Title level={4} style={{ marginBottom: 8 }}>{course.title}</Title>
+                <Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
+                  {course.description}
+                </Text>
 
-              <div className="mt-6 flex justify-end space-x-3">
-                <button className="text-[#0284c7] hover:text-[#0369a1] text-sm font-medium">
-                  View Materials
-                </button>
-                <button className="text-[#0284c7] hover:text-[#0369a1] text-sm font-medium">
-                  Continue Learning
-                </button>
+                <Space direction="vertical" size={12} style={{ width: '100%' }}>
+                  <Space>
+                    <ClockCircleOutlined />
+                    <Text type="secondary">
+                      Progress: <Text strong>{course.progress || 0}%</Text>
+                    </Text>
+                  </Space>
+                  <Space>
+                    <FileTextOutlined />
+                    <Text type="secondary">
+                      {course.assignmentCount || 0} Assignments
+                    </Text>
+                  </Space>
+
+                  <Progress
+                    percent={course.progress || 0}
+                    showInfo={false}
+                    strokeColor={{
+                      '0%': 'var(--primary-color)',
+                      '100%': '#1e3a8a',
+                    }}
+                    style={{ marginTop: 8 }}
+                  />
+
+                  <div className="d-flex justify-content-end gap-2 mt-3">
+                    <Button type="text" icon={<BookOutlined />}>
+                      View Materials
+                    </Button>
+                    <Button type="primary" icon={<RightOutlined />}>
+                      Continue Learning
+                    </Button>
+                  </div>
+                </Space>
               </div>
-            </div>
-          </div>
+            </Card>
+          </Col>
         ))}
-      </div>
+      </Row>
     </div>
   );
 } 

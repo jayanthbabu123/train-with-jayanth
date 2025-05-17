@@ -1,15 +1,51 @@
 import { useState, useEffect } from 'react';
-import { collection, query, getDocs, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, getDocs, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../../services/firebase';
-import toast from 'react-hot-toast';
-import AssignmentEditor from '../../components/AssignmentEditor';
+import { LANGUAGE_TEMPLATES } from '../../config/languageTemplates';
+import { 
+  Card, 
+  Button, 
+  Table, 
+  Tag, 
+  Space, 
+  Modal, 
+  Form, 
+  Input, 
+  Select, 
+  Typography, 
+  Popconfirm,
+  message,
+  Tabs,
+  Row,
+  Col,
+  Tooltip
+} from 'antd';
+import { 
+  PlusOutlined, 
+  EditOutlined, 
+  DeleteOutlined, 
+  CodeOutlined,
+  FileTextOutlined,
+  ClockCircleOutlined,
+  CheckCircleOutlined
+} from '@ant-design/icons';
+import { Sandpack } from '@codesandbox/sandpack-react';
+import ReactMarkdown from 'react-markdown';
 
-export default function TrainerAssignments() {
+const { Title, Text } = Typography;
+const { TextArea } = Input;
+const { Option } = Select;
+const BRAND_COLOR = '#0067b8';
+
+export default function Assignments() {
   const [assignments, setAssignments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showEditor, setShowEditor] = useState(false);
-  const [selectedAssignment, setSelectedAssignment] = useState(null);
-  const [filter, setFilter] = useState('all'); // all, active, draft
+  const [modalVisible, setModalVisible] = useState(false);
+  const [editingAssignment, setEditingAssignment] = useState(null);
+  const [form] = Form.useForm();
+  const [activeTab, setActiveTab] = useState('all');
+  const [currentCode, setCurrentCode] = useState(LANGUAGE_TEMPLATES.javascript.files);
+  const [sandpackKey, setSandpackKey] = useState(Date.now());
 
   useEffect(() => {
     fetchAssignments();
@@ -19,186 +55,461 @@ export default function TrainerAssignments() {
     try {
       const q = query(collection(db, 'assignments'));
       const querySnapshot = await getDocs(q);
-      const assignmentList = querySnapshot.docs.map(doc => ({
+      const assignmentsList = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       }));
-      setAssignments(assignmentList);
+      setAssignments(assignmentsList);
     } catch (error) {
-      toast.error('Failed to fetch assignments');
-      console.error('Error fetching assignments:', error);
+      message.error('Failed to fetch assignments');
+      console.error('Error:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSaveAssignment = async (data) => {
-    if (!data) {
-      setShowEditor(false);
-      return;
+  const handleLanguageChange = (value) => {
+    if (!LANGUAGE_TEMPLATES[value]) return;
+    
+    // Update the current code files based on selected language
+    const newFiles = {...LANGUAGE_TEMPLATES[value].files};
+    
+    // Special handling for JavaScript to fix preview issues
+    if (value === 'javascript' && newFiles['/index.js'] && !newFiles['/script.js']) {
+      // Handle case when script.js might be missing but referenced in HTML
+      const htmlContent = newFiles['/index.html'] || '';
+      if (htmlContent.includes('script.js') && !newFiles['/script.js']) {
+        newFiles['/script.js'] = newFiles['/index.js'];
+        delete newFiles['/index.js'];
+      }
     }
+    
+    // Update state and form fields
+    setCurrentCode(newFiles);
+    form.setFieldsValue({ 
+      language: value,
+      defaultCode: newFiles
+    });
+    
+    // Force Sandpack to re-render with new key
+    setSandpackKey(Date.now());
+  };
 
+  const handleCreate = () => {
+    setEditingAssignment(null);
+    const defaultLanguage = 'javascript';
+    const defaultFiles = {...LANGUAGE_TEMPLATES[defaultLanguage].files};
+    
+    // Make sure we have the right structure for JavaScript files
+    if (defaultFiles['/index.html'] && defaultFiles['/index.html'].includes('script.js') && !defaultFiles['/script.js']) {
+      if (defaultFiles['/index.js']) {
+        defaultFiles['/script.js'] = defaultFiles['/index.js'];
+        delete defaultFiles['/index.js'];
+      }
+    }
+    
+    setCurrentCode(defaultFiles);
+    setSandpackKey(Date.now());
+    
+    form.resetFields();
+    form.setFieldsValue({
+      language: defaultLanguage,
+      defaultCode: defaultFiles
+    });
+    
+    setModalVisible(true);
+  };
+
+  const handleEdit = (assignment) => {
+    setEditingAssignment(assignment);
+    
+    // Ensure we have proper files structure
+    let codeFiles = assignment.defaultCode;
+    if (!codeFiles || typeof codeFiles !== 'object') {
+      codeFiles = {...LANGUAGE_TEMPLATES[assignment.language].files};
+    }
+    
+    setCurrentCode(codeFiles);
+    setSandpackKey(Date.now());
+    
+    form.setFieldsValue({
+      title: assignment.title,
+      description: assignment.description,
+      language: assignment.language,
+      defaultCode: codeFiles,
+      dueDate: assignment.dueDate
+    });
+    
+    setModalVisible(true);
+  };
+
+  const handleDelete = async (id) => {
     try {
-      await addDoc(collection(db, 'assignments'), {
-        ...data,
-        status: 'active',
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      });
-      toast.success('Assignment created successfully');
-      setShowEditor(false);
+      await deleteDoc(doc(db, 'assignments', id));
+      message.success('Assignment deleted successfully');
       fetchAssignments();
     } catch (error) {
-      toast.error('Failed to create assignment');
-      console.error('Error creating assignment:', error);
+      message.error('Failed to delete assignment');
+      console.error('Error:', error);
     }
   };
 
-  const getFilteredAssignments = () => {
-    switch (filter) {
-      case 'active':
-        return assignments.filter(a => a.status === 'active');
-      case 'draft':
-        return assignments.filter(a => a.status === 'draft');
-      default:
-        return assignments;
+  const handleSubmit = async (values) => {
+    try {
+      // Make sure to use the current code state which has the proper files
+      const assignmentData = {
+        ...values,
+        defaultCode: currentCode, // Use the currentCode state instead of form value
+        createdAt: new Date(),
+        status: 'active'
+      };
+
+      if (editingAssignment) {
+        await updateDoc(doc(db, 'assignments', editingAssignment.id), assignmentData);
+        message.success('Assignment updated successfully');
+      } else {
+        await addDoc(collection(db, 'assignments'), assignmentData);
+        message.success('Assignment created successfully');
+      }
+
+      setModalVisible(false);
+      fetchAssignments();
+    } catch (error) {
+      message.error('Failed to save assignment');
+      console.error('Error:', error);
     }
   };
 
-  const getDifficultyBadge = (difficulty) => {
-    const colors = {
-      beginner: 'bg-green-100 text-green-800',
-      intermediate: 'bg-yellow-100 text-yellow-800',
-      advanced: 'bg-red-100 text-red-800'
-    };
-    return (
-      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${colors[difficulty]}`}>
-        {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
-      </span>
-    );
-  };
+  const columns = [
+    {
+      title: 'Title',
+      dataIndex: 'title',
+      key: 'title',
+      render: (text, record) => (
+        <Space>
+          <CodeOutlined style={{ color: LANGUAGE_TEMPLATES[record.language]?.color }} />
+          <span style={{ fontWeight: 500 }}>{text}</span>
+        </Space>
+      ),
+    },
+    {
+      title: 'Language',
+      dataIndex: 'language',
+      key: 'language',
+      render: (language) => (
+        <Tag 
+          color={LANGUAGE_TEMPLATES[language]?.color} 
+          style={{ 
+            padding: '4px 8px',
+            borderRadius: '4px',
+            fontWeight: 500
+          }}
+        >
+          {LANGUAGE_TEMPLATES[language]?.icon} {LANGUAGE_TEMPLATES[language]?.name}
+        </Tag>
+      ),
+    },
+    {
+      title: 'Due Date',
+      dataIndex: 'dueDate',
+      key: 'dueDate',
+      render: (date) => (
+        <Space>
+          <ClockCircleOutlined />
+          <span>{new Date(date).toLocaleDateString()}</span>
+        </Space>
+      ),
+    },
+    {
+      title: 'Status',
+      dataIndex: 'status',
+      key: 'status',
+      render: (status) => (
+        <Tag 
+          color={status === 'active' ? 'green' : 'default'}
+          icon={status === 'active' ? <CheckCircleOutlined /> : null}
+          style={{ 
+            padding: '4px 8px',
+            borderRadius: '4px',
+            fontWeight: 500
+          }}
+        >
+          {status.charAt(0).toUpperCase() + status.slice(1)}
+        </Tag>
+      ),
+    },
+    {
+      title: 'Actions',
+      key: 'actions',
+      render: (_, record) => (
+        <Space>
+          <Button
+            type="primary"
+            icon={<EditOutlined />}
+            onClick={() => handleEdit(record)}
+            style={{ 
+              borderRadius: '6px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}
+          >
+            Edit
+          </Button>
+          <Popconfirm
+            title="Delete Assignment"
+            description="Are you sure you want to delete this assignment?"
+            onConfirm={() => handleDelete(record.id)}
+            okText="Yes"
+            cancelText="No"
+          >
+            <Button
+              danger
+              icon={<DeleteOutlined />}
+              style={{ 
+                borderRadius: '6px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+            >
+              Delete
+            </Button>
+          </Popconfirm>
+        </Space>
+      ),
+    },
+  ];
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0284c7]"></div>
-      </div>
-    );
-  }
+  const filteredAssignments = activeTab === 'all' 
+    ? assignments 
+    : assignments.filter(a => a.language === activeTab);
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Assignment Management</h1>
-        <button
-          onClick={() => setShowEditor(true)}
-          className="bg-[#0284c7] text-white px-4 py-2 rounded-lg hover:bg-[#0369a1] transition-colors"
-        >
-          Create New Assignment
-        </button>
-      </div>
-
-      {/* Filters */}
-      <div className="mb-6 flex space-x-4">
-        <button
-          onClick={() => setFilter('all')}
-          className={`px-4 py-2 rounded-lg ${
-            filter === 'all'
-              ? 'bg-[#0284c7] text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          }`}
-        >
-          All
-        </button>
-        <button
-          onClick={() => setFilter('active')}
-          className={`px-4 py-2 rounded-lg ${
-            filter === 'active'
-              ? 'bg-[#0284c7] text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          }`}
-        >
-          Active
-        </button>
-        <button
-          onClick={() => setFilter('draft')}
-          className={`px-4 py-2 rounded-lg ${
-            filter === 'draft'
-              ? 'bg-[#0284c7] text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          }`}
-        >
-          Drafts
-        </button>
-      </div>
-
-      {/* Assignments Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {getFilteredAssignments().map((assignment) => (
-          <div key={assignment.id} className="bg-white rounded-lg shadow-lg overflow-hidden">
-            <div className="p-6">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h2 className="text-xl font-semibold text-gray-900">{assignment.title}</h2>
-                  <p className="text-gray-600 text-sm mt-1">{assignment.description}</p>
-                </div>
-                <div className="flex flex-col items-end space-y-2">
-                  {getDifficultyBadge(assignment.difficulty)}
-                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                    assignment.status === 'active' 
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-gray-100 text-gray-800'
-                  }`}>
-                    {assignment.status}
-                  </span>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <div className="flex items-center text-sm text-gray-600">
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  Due: {new Date(assignment.dueDate).toLocaleDateString()}
-                </div>
-                <div className="flex items-center text-sm text-gray-600">
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                  {assignment.submittedCount || 0} Submissions
-                </div>
-              </div>
-
-              <div className="mt-6 flex justify-end space-x-3">
-                <button
-                  onClick={() => {
-                    setSelectedAssignment(assignment);
-                    setShowEditor(true);
-                  }}
-                  className="text-[#0284c7] hover:text-[#0369a1] text-sm font-medium"
-                >
-                  Edit
-                </button>
-                <button className="text-[#0284c7] hover:text-[#0369a1] text-sm font-medium">
-                  View Submissions
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Assignment Editor Modal */}
-      {showEditor && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="w-full max-w-6xl max-h-[90vh] overflow-y-auto">
-            <AssignmentEditor
-              initialData={selectedAssignment}
-              onSave={handleSaveAssignment}
-            />
-          </div>
+    <div style={{ padding: '24px' }}>
+      <Card 
+        bordered={false} 
+        style={{ 
+          borderRadius: 12, 
+          boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+          background: '#fff'
+        }}
+      >
+        <div style={{ marginBottom: 24 }}>
+          <Title level={2} style={{ margin: 0, color: BRAND_COLOR }}>
+            Assignment Management
+          </Title>
+          <Text type="secondary">
+            Create and manage programming assignments
+          </Text>
         </div>
-      )}
+
+        <div style={{ marginBottom: 24 }}>
+          <Tabs
+            activeKey={activeTab}
+            onChange={setActiveTab}
+            items={[
+              { key: 'all', label: 'All Assignments' },
+              ...Object.entries(LANGUAGE_TEMPLATES).map(([key, lang]) => ({
+                key,
+                label: (
+                  <Space>
+                    <span>{lang.icon}</span>
+                    <span>{lang.name}</span>
+                  </Space>
+                )
+              }))
+            ]}
+          />
+        </div>
+
+        <div style={{ marginBottom: 16 }}>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={handleCreate}
+            style={{ 
+              borderRadius: '6px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}
+          >
+            Create Assignment
+          </Button>
+        </div>
+
+        <Table
+          dataSource={filteredAssignments}
+          columns={columns}
+          rowKey="id"
+          pagination={{ 
+            pageSize: 8,
+            showSizeChanger: true,
+            showTotal: (total) => `Total ${total} assignments`
+          }}
+          scroll={{ x: true }}
+        />
+      </Card>
+
+      <Modal
+        title={
+          <Title level={4} style={{ margin: 0, color: BRAND_COLOR }}>
+            {editingAssignment ? 'Edit Assignment' : 'Create Assignment'}
+          </Title>
+        }
+        open={modalVisible}
+        onCancel={() => setModalVisible(false)}
+        footer={null}
+        width={800}
+        style={{ top: 20 }}
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleSubmit}
+          initialValues={{
+            language: 'javascript',
+            defaultCode: LANGUAGE_TEMPLATES.javascript.files
+          }}
+        >
+          <Row gutter={24}>
+            <Col span={24}>
+              <Form.Item
+                name="title"
+                label="Title"
+                rules={[{ required: true, message: 'Please enter assignment title' }]}
+              >
+                <Input placeholder="Enter assignment title" />
+              </Form.Item>
+            </Col>
+            <Col span={24}>
+              <Form.Item
+                name="description"
+                label="Description"
+                rules={[{ required: true, message: 'Please enter assignment description' }]}
+              >
+                <div style={{ border: '1px solid #d9d9d9', borderRadius: '6px', overflow: 'hidden' }}>
+                  <div style={{ 
+                    background: '#f5f5f5', 
+                    padding: '8px 12px', 
+                    borderBottom: '1px solid #d9d9d9',
+                    fontSize: '12px',
+                    color: '#666'
+                  }}>
+                    Markdown Editor
+                  </div>
+                  <TextArea 
+                    rows={6} 
+                    placeholder="Write your description in markdown format..."
+                    style={{ 
+                      border: 'none',
+                      borderRadius: 0,
+                      fontFamily: 'monospace'
+                    }}
+                  />
+                </div>
+              </Form.Item>
+              <div style={{ 
+                marginTop: '8px',
+                padding: '16px',
+                background: '#fafafa',
+                borderRadius: '6px',
+                border: '1px solid #f0f0f0'
+              }}>
+                <div style={{ 
+                  fontSize: '12px',
+                  color: '#666',
+                  marginBottom: '8px'
+                }}>
+                  Preview
+                </div>
+                <div style={{ 
+                  fontSize: '14px',
+                  lineHeight: '1.6'
+                }}>
+                  <ReactMarkdown>
+                    {form.getFieldValue('description') || ''}
+                  </ReactMarkdown>
+                </div>
+              </div>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="language"
+                label="Programming Language"
+                rules={[{ required: true, message: 'Please select a language' }]}
+              >
+                <Select 
+                  placeholder="Select language"
+                  onChange={handleLanguageChange}
+                >
+                  {Object.entries(LANGUAGE_TEMPLATES).map(([key, lang]) => (
+                    <Option key={key} value={key}>
+                      <Space>
+                        <span>{lang.icon}</span>
+                        <span>{lang.name}</span>
+                      </Space>
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="dueDate"
+                label="Due Date"
+                rules={[{ required: true, message: 'Please select due date' }]}
+              >
+                <Input type="date" />
+              </Form.Item>
+            </Col>
+            <Col span={24}>
+              <Form.Item
+                name="defaultCode"
+                label="Default Code Snippet"
+                rules={[{ required: true, message: 'Please enter default code' }]}
+              >
+                <div style={{ border: '1px solid #d9d9d9', borderRadius: '6px', overflow: 'hidden' }}>
+                  <Sandpack
+                    key={sandpackKey}
+                    template={LANGUAGE_TEMPLATES[form.getFieldValue('language')]?.template || 'vanilla'}
+                    files={currentCode}
+                    options={{
+                      showNavigator: true,
+                      showTabs: true,
+                      showLineNumbers: true,
+                      showInlineErrors: true,
+                      closableTabs: false,
+                      wrapContent: true,
+                      recompileMode: "delayed",
+                      recompileDelay: 500
+                    }}
+                    theme="light"
+                    customSetup={{
+                      dependencies: form.getFieldValue('language') === 'react' ? 
+                        {
+                          "react": "^18.0.0",
+                          "react-dom": "^18.0.0"
+                        } : {}
+                    }}
+                  />
+                </div>
+              </Form.Item>
+            </Col>
+          </Row>
+          <div style={{ textAlign: 'right', marginTop: 24 }}>
+            <Space>
+              <Button onClick={() => setModalVisible(false)}>
+                Cancel
+              </Button>
+              <Button type="primary" htmlType="submit">
+                {editingAssignment ? 'Update' : 'Create'}
+              </Button>
+            </Space>
+          </div>
+        </Form>
+      </Modal>
     </div>
   );
-} 
+}

@@ -1,288 +1,350 @@
-import { Fragment, useState } from 'react';
-import { Dialog, Transition, Menu } from '@headlessui/react';
+import React, { useState } from "react";
+import { Layout, Menu, Avatar, Dropdown, Button, Drawer } from "antd";
 import {
-  Bars3Icon,
-  XMarkIcon,
-  HomeIcon,
-  UserGroupIcon,
-  DocumentTextIcon,
-  ClipboardDocumentListIcon,
-  BookOpenIcon,
-  UserCircleIcon,
-  CodeBracketIcon,
-  UserIcon,
-  BellIcon,
-} from '@heroicons/react/24/outline';
-import { useAuth } from '../contexts/AuthContext';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+  MenuUnfoldOutlined,
+  MenuFoldOutlined,
+  BellOutlined,
+  UserOutlined,
+  LogoutOutlined,
+  HomeOutlined,
+  TeamOutlined,
+  FileTextOutlined,
+  FileDoneOutlined,
+  BookOutlined,
+  CodeOutlined,
+  UserSwitchOutlined,
+  VideoCameraOutlined,
+  UsergroupAddOutlined,
+  PlayCircleOutlined,
+} from "@ant-design/icons";
+import { useAuth } from "../contexts/AuthContext";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+
+const { Header, Sider, Content } = Layout;
+
+const BRAND_COLOR = "#0067b8";
+const SECONDARY_COLOR = "#1e3a8a";
+const HOVER_COLOR = "#f0f7ff";
 
 const trainerNavigation = [
-  { name: 'Dashboard', href: '/trainer/dashboard', icon: HomeIcon },
-  { name: 'Batches', href: '/trainer/batches', icon: UserGroupIcon },
-  { name: 'Materials', href: '/trainer/materials', icon: DocumentTextIcon },
-  { name: 'Assignments', href: '/trainer/assignments', icon: ClipboardDocumentListIcon },
+  { name: "Dashboard", href: "/trainer/dashboard", icon: <HomeOutlined /> },
+  { name: "Batches", href: "/trainer/batches", icon: <TeamOutlined /> },
+  { name: "Materials", href: "/trainer/materials", icon: <FileTextOutlined /> },
+  { name: "Assignments", href: "/trainer/assignments", icon: <FileDoneOutlined /> },
+  { name: "Students", href: "/trainer/students", icon: <UsergroupAddOutlined /> },
+  { name: "Video Upload", href: "/trainer/video-upload", icon: <VideoCameraOutlined /> },
 ];
 
 const studentNavigation = [
-  { name: 'Dashboard', href: '/student/dashboard', icon: HomeIcon },
-  { name: 'Courses', href: '/student/courses', icon: BookOpenIcon },
-  { name: 'Assignments', href: '/student/assignments', icon: ClipboardDocumentListIcon },
-  { name: 'Practice', href: '/student/practice', icon: CodeBracketIcon },
-  { name: 'Profile', href: '/student/profile', icon: UserIcon },
+  { name: "Dashboard", href: "/student/dashboard", icon: <HomeOutlined /> },
+  { name: "Courses", href: "/student/courses", icon: <BookOutlined /> },
+  { name: "Assignments", href: "/student/assignments", icon: <FileDoneOutlined /> },
+  { name: "Practice", href: "/student/practice", icon: <CodeOutlined /> },
+  { name: "Videos", href: "/student/videos", icon: <PlayCircleOutlined /> },
+  { name: "Profile", href: "/student/profile", icon: <UserSwitchOutlined /> },
+  { name: "Batches", href: "/student/batches", icon: <TeamOutlined /> },
 ];
 
-const Logo = () => (
-  <div className="flex items-center">
-    <div className="relative flex items-center justify-center w-10 h-10">
-      <div className="absolute inset-0 bg-gradient-to-br from-[#3b82f6] to-[#1e3a8a] rounded-xl transform rotate-45"></div>
-      <div className="absolute inset-0 flex items-center justify-center">
-        <span className="text-white text-xl font-bold transform -rotate-45">TJ</span>
+const Logo = ({ collapsed }) => (
+  <div
+    className="d-flex align-items-center gap-2 py-4 px-3 justify-content-center"
+    style={{ 
+      whiteSpace: "nowrap", 
+      overflow: "hidden",
+      borderBottom: "1px solid #f0f0f0",
+      marginBottom: "8px"
+    }}
+  >
+    <div
+      style={{
+        width: 42,
+        height: 42,
+        background: "linear-gradient(135deg, #0067b8 0%, #1e3a8a 100%)",
+        borderRadius: 12,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontWeight: "bold",
+        color: "#fff",
+        fontSize: 24,
+        marginRight: collapsed ? 0 : 12,
+        boxShadow: "0 4px 12px rgba(0, 103, 184, 0.2)",
+        transition: "all 0.3s ease"
+      }}
+    >
+      TJ
+    </div>
+    {!collapsed && (
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <span className="fs-5 fw-bold" style={{ 
+          color: BRAND_COLOR, 
+          marginRight: 4,
+          letterSpacing: "0.5px"
+        }}>
+          TrainWith
+        </span>
+        <span className="fs-5 fw-bold" style={{ 
+          color: SECONDARY_COLOR,
+          letterSpacing: "0.5px"
+        }}>
+          Jayanth
+        </span>
       </div>
-    </div>
-    <div className="ml-3">
-      <span className="text-xl font-bold bg-gradient-to-r from-[#3b82f6] to-[#1e3a8a] bg-clip-text text-transparent">
-        TrainWith
-      </span>
-      <span className="text-xl font-bold bg-gradient-to-r from-[#1e3a8a] to-[#3b82f6] bg-clip-text text-transparent">
-        Jayanth
-      </span>
-    </div>
+    )}
   </div>
 );
 
 export default function DashboardLayout({ children }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+  const [drawerVisible, setDrawerVisible] = useState(false);
   const { currentUser, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Choose navigation based on role
-  const navigation = currentUser?.role === 'trainer' ? trainerNavigation : studentNavigation;
+  const navigation =
+    currentUser?.role === "trainer" ? trainerNavigation : studentNavigation;
 
-  const handleLogout = async () => {
-    try {
-      await logout();
-      navigate('/login');
-    } catch (error) {
-      console.error('Failed to log out:', error);
-    }
-  };
+  const selectedKey = navigation.find(
+    (item) => location.pathname.indexOf(item.href) === 0
+  )?.href;
+
+  const userMenu = (
+    <Menu>
+      <Menu.Item key="profile" icon={<UserOutlined />}>
+        <Link
+          to={
+            currentUser?.role === "trainer"
+              ? "/trainer/profile"
+              : "/student/profile"
+          }
+          style={{ textDecoration: "none" }}
+        >
+          Your Profile
+        </Link>
+      </Menu.Item>
+      <Menu.Divider />
+      <Menu.Item
+        key="logout"
+        icon={<LogoutOutlined />}
+        onClick={async () => {
+          await logout();
+          navigate("/login");
+        }}
+        danger
+      >
+        Sign out
+      </Menu.Item>
+    </Menu>
+  );
+
+  // Sidebar content (for both Sider and Drawer)
+  const sidebarContent = (
+    <>
+      <Logo collapsed={collapsed} />
+      <Menu
+        mode="inline"
+        selectedKeys={[selectedKey]}
+        style={{ 
+          borderRight: 0, 
+          fontWeight: 500, 
+          fontSize: 15,
+          padding: "8px"
+        }}
+        items={navigation.map((item) => ({
+          key: item.href,
+          icon: React.cloneElement(item.icon, { 
+            style: { 
+              color: location.pathname.indexOf(item.href) === 0 ? BRAND_COLOR : "#666",
+              fontSize: "18px"
+            } 
+          }),
+          label: (
+            <Link 
+              to={item.href} 
+              style={{ 
+                textDecoration: "none",
+                color: location.pathname.indexOf(item.href) === 0 ? BRAND_COLOR : "#333",
+                fontWeight: location.pathname.indexOf(item.href) === 0 ? 600 : 500
+              }}
+            >
+              {item.name}
+            </Link>
+          ),
+          style: {
+            margin: "4px 0",
+            borderRadius: "8px",
+            height: "48px",
+            lineHeight: "48px",
+            backgroundColor: location.pathname.indexOf(item.href) === 0 ? HOVER_COLOR : "transparent"
+          }
+        }))}
+      />
+    </>
+  );
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Mobile sidebar */}
-      <Transition.Root show={sidebarOpen} as={Fragment}>
-        <Dialog as="div" className="relative z-50 lg:hidden" onClose={setSidebarOpen}>
-          <Transition.Child
-            as={Fragment}
-            enter="transition-opacity ease-linear duration-300"
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave="transition-opacity ease-linear duration-300"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
-          >
-            <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-sm" />
-          </Transition.Child>
+    <Layout style={{ minHeight: "100vh" }}>
+      {/* Sidebar for desktop */}
+      <Sider
+        breakpoint="lg"
+        collapsedWidth={80}
+        collapsible
+        collapsed={collapsed}
+        onCollapse={setCollapsed}
+        width={280}
+        className="d-none d-lg-block"
+        style={{
+          background: "#fff",
+          boxShadow: "2px 0 8px rgba(0,0,0,0.05)",
+          position: "fixed",
+          height: "100vh",
+          zIndex: 1000
+        }}
+      >
+        {sidebarContent}
+      </Sider>
 
-          <div className="fixed inset-0 flex">
-            <Transition.Child
-              as={Fragment}
-              enter="transition ease-in-out duration-300 transform"
-              enterFrom="-translate-x-full"
-              enterTo="translate-x-0"
-              leave="transition ease-in-out duration-300 transform"
-              leaveFrom="translate-x-0"
-              leaveTo="-translate-x-full"
-            >
-              <Dialog.Panel className="relative mr-16 flex w-full max-w-xs flex-1">
-                <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-white px-6 pb-4 shadow-xl">
-                  <div className="flex h-16 shrink-0 items-center">
-                    <Logo />
-                  </div>
-                  <nav className="flex flex-1 flex-col">
-                    <ul role="list" className="flex flex-1 flex-col gap-y-7">
-                      <li>
-                        <ul role="list" className="-mx-2 space-y-1">
-                          {navigation.map((item) => (
-                            <li key={item.name}>
-                              <Link
-                                to={item.href}
-                                className={`
-                                  group flex gap-x-3 rounded-xl p-3 text-sm font-semibold leading-6 transition-all duration-200
-                                  ${location.pathname === item.href
-                                    ? 'bg-[#3b82f6]/10 text-[#3b82f6] shadow-sm'
-                                    : 'text-gray-700 hover:bg-gray-50 hover:text-[#3b82f6]'
-                                  }
-                                `}
-                              >
-                                <item.icon
-                                  className={`h-6 w-6 shrink-0 ${
-                                    location.pathname === item.href
-                                      ? 'text-[#3b82f6]'
-                                      : 'text-gray-400 group-hover:text-[#3b82f6]'
-                                  }`}
-                                  aria-hidden="true"
-                                />
-                                {item.name}
-                              </Link>
-                            </li>
-                          ))}
-                        </ul>
-                      </li>
-                    </ul>
-                  </nav>
-                </div>
-              </Dialog.Panel>
-            </Transition.Child>
+      {/* Drawer for mobile */}
+      <Drawer
+        title={<Logo collapsed={false} />}
+        placement="left"
+        onClose={() => setDrawerVisible(false)}
+        open={drawerVisible}
+        bodyStyle={{ padding: 0 }}
+        width={280}
+        className="d-lg-none"
+      >
+        {sidebarContent}
+      </Drawer>
+
+      <Layout style={{ marginLeft: collapsed ? 80 : 280, transition: "all 0.2s" }}>
+        {/* Header */}
+        <Header
+          className="d-flex align-items-center justify-content-between px-4"
+          style={{
+            background: "#fff",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+            height: 70,
+            padding: 0,
+            position: "sticky",
+            top: 0,
+            zIndex: 999,
+            width: "100%"
+          }}
+        >
+          <div className="d-flex align-items-center gap-3">
+            <Button
+              type="text"
+              icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+              onClick={() => setCollapsed((prev) => !prev)}
+              className="d-none d-lg-inline-flex"
+              style={{ 
+                fontSize: 20, 
+                color: BRAND_COLOR,
+                width: 40,
+                height: 40,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: "8px",
+                transition: "all 0.3s"
+              }}
+            />
+            <Button
+              type="text"
+              icon={<MenuUnfoldOutlined />}
+              onClick={() => setDrawerVisible(true)}
+              className="d-lg-none"
+              style={{ 
+                fontSize: 20, 
+                color: BRAND_COLOR,
+                width: 40,
+                height: 40,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: "8px"
+              }}
+            />
           </div>
-        </Dialog>
-      </Transition.Root>
-
-      {/* Desktop sidebar */}
-      <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
-        <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white px-6 pb-4 shadow-lg">
-          <div className="flex h-16 shrink-0 items-center">
-            <Logo />
-          </div>
-          <nav className="flex flex-1 flex-col">
-            <ul role="list" className="flex flex-1 flex-col gap-y-7">
-              <li>
-                <ul role="list" className="-mx-2 space-y-1">
-                  {navigation.map((item) => (
-                    <li key={item.name}>
-                      <Link
-                        to={item.href}
-                        className={`
-                          group flex gap-x-3 rounded-xl p-3 text-sm font-semibold leading-6 transition-all duration-200
-                          ${location.pathname === item.href
-                            ? 'bg-[#3b82f6]/10 text-[#3b82f6] shadow-sm'
-                            : 'text-gray-700 hover:bg-gray-50 hover:text-[#3b82f6]'
-                          }
-                        `}
-                      >
-                        <item.icon
-                          className={`h-6 w-6 shrink-0 ${
-                            location.pathname === item.href
-                              ? 'text-[#3b82f6]'
-                              : 'text-gray-400 group-hover:text-[#3b82f6]'
-                          }`}
-                          aria-hidden="true"
-                        />
-                        {item.name}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </li>
-            </ul>
-          </nav>
-        </div>
-      </div>
-
-      <div className="lg:pl-72">
-        {/* Top header */}
-        <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
-          <button
-            type="button"
-            className="-m-2.5 p-2.5 text-gray-700 lg:hidden hover:text-[#3b82f6] transition-colors"
-            onClick={() => setSidebarOpen(true)}
-          >
-            <span className="sr-only">Open sidebar</span>
-            <Bars3Icon className="h-6 w-6" aria-hidden="true" />
-          </button>
-
-          {/* Header Navigation */}
-          <div className="hidden lg:flex lg:gap-x-6">
-            {navigation.map((item) => (
-              <Link
-                key={item.name}
-                to={item.href}
-                className={`
-                  text-sm font-semibold leading-6 transition-colors duration-200
-                  ${location.pathname === item.href
-                    ? 'text-[#3b82f6]'
-                    : 'text-gray-700 hover:text-[#3b82f6]'
-                  }
-                `}
-              >
-                {item.name}
-              </Link>
-            ))}
-          </div>
-
-          <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
-            <div className="flex flex-1" />
-            <div className="flex items-center gap-x-4 lg:gap-x-6">
-              <button
-                type="button"
-                className="-m-2.5 p-2.5 text-gray-400 hover:text-[#3b82f6] transition-colors"
-              >
-                <span className="sr-only">View notifications</span>
-                <BellIcon className="h-6 w-6" aria-hidden="true" />
-              </button>
-
-              {/* Profile dropdown */}
-              <Menu as="div" className="relative">
-                <Menu.Button className="-m-1.5 flex items-center p-1.5 hover:bg-gray-50 rounded-lg transition-colors">
-                  <span className="sr-only">Open user menu</span>
-                  <div className="flex items-center gap-x-4">
-                    <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[#3b82f6] to-[#1e3a8a] flex items-center justify-center text-white font-semibold">
-                      {currentUser?.displayName?.charAt(0) || 'U'}
-                    </div>
-                    <span className="hidden lg:flex lg:items-center">
-                      <span className="text-sm font-semibold leading-6 text-gray-900">
-                        {currentUser?.displayName}
-                      </span>
-                    </span>
-                  </div>
-                </Menu.Button>
-                <Transition
-                  as={Fragment}
-                  enter="transition ease-out duration-100"
-                  enterFrom="transform opacity-0 scale-95"
-                  enterTo="transform opacity-100 scale-100"
-                  leave="transition ease-in duration-75"
-                  leaveFrom="transform opacity-100 scale-100"
-                  leaveTo="transform opacity-0 scale-95"
+          <div className="d-flex align-items-center gap-3">
+            <div className="d-none d-lg-flex align-items-center" style={{ marginRight: 16 }}>
+              {navigation.map((item) => (
+                <Link
+                  key={item.href}
+                  to={item.href}
+                  style={{
+                    color: location.pathname.indexOf(item.href) === 0 ? BRAND_COLOR : "#333",
+                    fontWeight: location.pathname.indexOf(item.href) === 0 ? 600 : 500,
+                    fontSize: 15,
+                    marginLeft: 24,
+                    textDecoration: "none",
+                    padding: "8px 12px",
+                    borderRadius: "8px",
+                    transition: "all 0.3s",
+                    backgroundColor: location.pathname.indexOf(item.href) === 0 ? HOVER_COLOR : "transparent"
+                  }}
+                  className="header-link"
                 >
-                  <Menu.Items className="absolute right-0 z-10 mt-2.5 w-48 origin-top-right rounded-xl bg-white py-2 shadow-lg ring-1 ring-gray-900/5 focus:outline-none">
-                    <Menu.Item>
-                      {({ active }) => (
-                        <Link
-                          to={currentUser?.role === 'trainer' ? '/trainer/profile' : '/student/profile'}
-                          className={`block px-4 py-2 text-sm leading-6 ${
-                            active ? 'bg-gray-50 text-[#3b82f6]' : 'text-gray-700'
-                          }`}
-                        >
-                          Your Profile
-                        </Link>
-                      )}
-                    </Menu.Item>
-                    <Menu.Item>
-                      {({ active }) => (
-                        <button
-                          onClick={handleLogout}
-                          className={`block w-full text-left px-4 py-2 text-sm leading-6 text-red-600 ${
-                            active ? 'bg-gray-50' : ''
-                          }`}
-                        >
-                          Sign out
-                        </button>
-                      )}
-                    </Menu.Item>
-                  </Menu.Items>
-                </Transition>
-              </Menu>
+                  {item.name}
+                </Link>
+              ))}
             </div>
+            <Button
+              type="text"
+              icon={<BellOutlined style={{ fontSize: 20, color: BRAND_COLOR }} />}
+              className="me-2"
+              style={{
+                width: 40,
+                height: 40,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: "8px",
+                transition: "all 0.3s"
+              }}
+            />
+            <Dropdown overlay={userMenu} trigger={["click"]}>
+              <div 
+                className="d-flex align-items-center" 
+                style={{ 
+                  cursor: "pointer",
+                  padding: "4px 12px",
+                  borderRadius: "8px",
+                  transition: "all 0.3s",
+                  backgroundColor: HOVER_COLOR
+                }}
+              >
+                <Avatar
+                  style={{
+                    background: "linear-gradient(135deg, #0067b8 0%, #1e3a8a 100%)",
+                    marginRight: 8,
+                    boxShadow: "0 2px 8px rgba(0, 103, 184, 0.2)"
+                  }}
+                  size={36}
+                >
+                  {currentUser?.displayName?.charAt(0) || "U"}
+                </Avatar>
+                <span className="fw-semibold d-none d-lg-inline" style={{ color: BRAND_COLOR }}>
+                  {currentUser?.displayName}
+                </span>
+              </div>
+            </Dropdown>
           </div>
-        </div>
-
+        </Header>
         {/* Main content */}
-        <main className="py-10">
-          <div className="px-4 sm:px-6 lg:px-8">{children}</div>
-        </main>
-      </div>
-    </div>
+        <Content style={{ 
+          margin: 0, 
+          background: "#f8f9fa", 
+          minHeight: "calc(100vh - 70px)",
+          padding: "24px",
+          width: "100%",
+          maxWidth: "100%",
+          overflowX: "hidden"
+        }}>
+          {children}
+        </Content>
+      </Layout>
+    </Layout>
   );
 } 

@@ -8,12 +8,43 @@ const starterCode = `import React, { useState } from "react";
 export default function Counter() {
   const [count, setCount] = useState(0);
   return (
-    <div className="flex flex-col items-center justify-center h-full">
-      <h2 className="text-2xl font-bold mb-4">Counter</h2>
-      <div className="flex items-center gap-4">
-        <button className="px-4 py-2 bg-blue-500 text-white rounded" onClick={() => setCount(count - 1)}>-</button>
-        <span className="text-xl font-semibold">{count}</span>
-        <button className="px-4 py-2 bg-blue-500 text-white rounded" onClick={() => setCount(count + 1)}>+</button>
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      height: '100%',
+      fontFamily: 'system-ui, -apple-system, sans-serif'
+    }}>
+      <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '16px' }}>Counter</h2>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <button 
+          style={{
+            padding: '8px 16px',
+            background: 'var(--primary-color)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '6px',
+            cursor: 'pointer'
+          }}
+          onClick={() => setCount(count - 1)}
+        >
+          -
+        </button>
+        <span style={{ fontSize: '20px', fontWeight: '600' }}>{count}</span>
+        <button 
+          style={{
+            padding: '8px 16px',
+            background: 'var(--primary-color)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '6px',
+            cursor: 'pointer'
+          }}
+          onClick={() => setCount(count + 1)}
+        >
+          +
+        </button>
       </div>
     </div>
   );
@@ -21,41 +52,45 @@ export default function Counter() {
 `;
 
 const problemStatement = `
- # Build a Counter Component
+# Build a Counter Component
 
 Create a simple React counter component with the following features:
+
+## Requirements
 
 - Display the current count (start at 0)
 - "+" button increases the count
 - "-" button decreases the count
 - Use React hooks (useState)
 - Style the buttons and layout for a clean look
+
+## Tips
+
+- Use the \`useState\` hook to manage the count state
+- Add event handlers for button clicks
+- Style your component using CSS or inline styles
+- Make sure the UI is responsive and user-friendly
+
+## Example Usage
+
+\`\`\`jsx
+<Counter />
+\`\`\`
+
+## Expected Output
+
+A centered counter with two buttons that increment and decrement the count.
 `;
 
 export default function StudentPractice() {
-  // Adjust header height here if needed (e.g., 64px or 72px)
-  const HEADER_HEIGHT = 150;
   return (
-    <div
-      className="flex flex-col lg:flex-row w-full gap-2 font-sans h-full"
-      style={{ height: `calc(100vh - ${HEADER_HEIGHT}px)` }}
-    >
-      {/* Problem Statement (33%) */}
-      <div className="lg:w-1/3 w-full bg-white rounded-xl shadow-md border border-gray-200 h-full flex flex-col">
-        <h2 className="text-xl font-bold text-[#1e3a8a] mb-4 px-4 pt-4">Problem</h2>
-        <div className="flex-1 min-h-0 px-4 pb-4">
-          <ProblemStatement markdown={problemStatement} />
-        </div>
+    <PracticeLayout>
+      <div style={{ minWidth: 320, maxWidth: 'auto', flex: '0 0 32%', height: '100%' }}>
+        <ProblemStatement markdown={problemStatement} />
       </div>
-      {/* Code Editor + Output (67%) */}
-      <div className="lg:w-2/3 w-full bg-white rounded-xl shadow-md border border-gray-200 h-full flex flex-col">
-        <div className="p-4 border-b border-gray-100">
-          <h2 className="text-xl font-bold text-[#1e3a8a]">Code Editor</h2>
-        </div>
-        <div className="flex-1 min-h-0 flex flex-col">
-          <PracticeSandpack starterCode={starterCode} showConsole={true} />
-        </div>
+      <div style={{ flex: 1, minWidth: 0, height: '100%' }}>
+        <PracticeSandpack starterCode={starterCode} showConsole={true} />
       </div>
-    </div>
+    </PracticeLayout>
   );
 } 

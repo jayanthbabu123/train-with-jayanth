@@ -3,6 +3,11 @@ import { useAuth } from '../../contexts/AuthContext';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import toast from 'react-hot-toast';
+import { Row, Col, Card, Spin, Typography, Empty } from 'antd';
+import { CheckCircleTwoTone, CalendarTwoTone, BookTwoTone } from '@ant-design/icons';
+
+const { Title, Text } = Typography;
+const BRAND_COLOR = '#0067b8';
 
 export default function StudentDashboard() {
   const { currentUser } = useAuth();
@@ -61,71 +66,71 @@ export default function StudentDashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0284c7]"></div>
+      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '60vh' }}>
+        <Spin size="large" style={{ color: BRAND_COLOR }} />
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Welcome back, {currentUser.displayName}!</h1>
-        <p className="text-gray-600 mt-2">Here's an overview of your learning progress</p>
+    <div className="container py-4">
+      <div className="mb-4">
+        <Title level={2} style={{ color: '#222', marginBottom: 0 }}>
+          Welcome back, {currentUser.displayName}!
+        </Title>
+        <Text type="secondary" style={{ fontSize: 16 }}>
+          Here's an overview of your learning progress
+        </Text>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <div className="flex items-center">
-            <div className="p-3 rounded-full bg-blue-100 text-[#0284c7]">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-              </svg>
+      <Row gutter={[24, 24]} className="mb-4">
+        <Col xs={24} md={8}>
+          <Card bordered={false} style={{ borderRadius: 16, boxShadow: '0 2px 8px #f0f1f2' }}>
+            <div className="d-flex align-items-center">
+              <CheckCircleTwoTone twoToneColor={BRAND_COLOR} style={{ fontSize: 36, marginRight: 16 }} />
+              <div>
+                <Text type="secondary">Completed Assignments</Text>
+                <div>
+                  <Title level={3} style={{ margin: 0 }}>{stats.completedAssignments}</Title>
+                </div>
+              </div>
             </div>
-            <div className="ml-4">
-              <h2 className="text-gray-600 text-sm">Completed Assignments</h2>
-              <p className="text-2xl font-semibold text-gray-900">{stats.completedAssignments}</p>
+          </Card>
+        </Col>
+        <Col xs={24} md={8}>
+          <Card bordered={false} style={{ borderRadius: 16, boxShadow: '0 2px 8px #f0f1f2' }}>
+            <div className="d-flex align-items-center">
+              <CalendarTwoTone twoToneColor={[BRAND_COLOR, '#52c41a']} style={{ fontSize: 36, marginRight: 16 }} />
+              <div>
+                <Text type="secondary">Upcoming Sessions</Text>
+                <div>
+                  <Title level={3} style={{ margin: 0 }}>{stats.upcomingSessions}</Title>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <div className="flex items-center">
-            <div className="p-3 rounded-full bg-green-100 text-green-600">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
+          </Card>
+        </Col>
+        <Col xs={24} md={8}>
+          <Card bordered={false} style={{ borderRadius: 16, boxShadow: '0 2px 8px #f0f1f2' }}>
+            <div className="d-flex align-items-center">
+              <BookTwoTone twoToneColor={[BRAND_COLOR, '#722ed1']} style={{ fontSize: 36, marginRight: 16 }} />
+              <div>
+                <Text type="secondary">Enrolled Courses</Text>
+                <div>
+                  <Title level={3} style={{ margin: 0 }}>{stats.totalCourses}</Title>
+                </div>
+              </div>
             </div>
-            <div className="ml-4">
-              <h2 className="text-gray-600 text-sm">Upcoming Sessions</h2>
-              <p className="text-2xl font-semibold text-gray-900">{stats.upcomingSessions}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <div className="flex items-center">
-            <div className="p-3 rounded-full bg-purple-100 text-purple-600">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-              </svg>
-            </div>
-            <div className="ml-4">
-              <h2 className="text-gray-600 text-sm">Enrolled Courses</h2>
-              <p className="text-2xl font-semibold text-gray-900">{stats.totalCourses}</p>
-            </div>
-          </div>
-        </div>
-      </div>
+          </Card>
+        </Col>
+      </Row>
 
       {/* Recent Activity */}
-      <div className="bg-white rounded-lg shadow-lg p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Recent Activity</h2>
-        <div className="space-y-4">
-          <p className="text-gray-600">No recent activity to show</p>
-        </div>
-      </div>
+      <Card bordered={false} style={{ borderRadius: 16, boxShadow: '0 2px 8px #f0f1f2' }}>
+        <Title level={4} style={{ marginBottom: 16, color: '#222' }}>Recent Activity</Title>
+        <Empty description={<span style={{ color: '#888' }}>No recent activity to show</span>} />
+      </Card>
     </div>
   );
 } 
