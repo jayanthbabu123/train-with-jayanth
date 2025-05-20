@@ -1,43 +1,42 @@
 import { useState, useEffect } from 'react';
-import { collection, query, getDocs } from 'firebase/firestore';
+import { collection, query, getDocs, where } from 'firebase/firestore';
 import { db } from '../../services/firebase';
-import toast from 'react-hot-toast';
-import PracticeLayout from '../../components/student/PracticeLayout';
-import ProblemStatement from '../../components/student/ProblemStatement';
-import PracticeSandpack from '../../components/student/PracticeSandpack';
-import { Tabs, Card, Button, Tag, Spin, Typography, Row, Col, Space, Divider } from 'antd';
+import { LANGUAGE_TEMPLATES } from '../../config/languageTemplates';
+import { 
+  Card, 
+  Button, 
+  Table, 
+  Tag, 
+  Space, 
+  Typography, 
+  message,
+  Tabs,
+  Row,
+  Col,
+  Tooltip,
+  Modal
+} from 'antd';
 import {
-  BookOutlined,
+  PlayCircleOutlined, 
+  CheckCircleOutlined, 
   ClockCircleOutlined,
-  CheckCircleOutlined,
-  PlayCircleOutlined,
+  CodeOutlined,
   FileTextOutlined,
   ReadOutlined,
-  BarChartOutlined,
-  ArrowRightOutlined,
-  CalendarOutlined,
-  LeftOutlined
+  BarChartOutlined
 } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 const { Title, Text } = Typography;
-
-const getDifficultyTag = (difficulty) => {
-  const colors = {
-    beginner: 'success',
-    intermediate: 'warning',
-    advanced: 'error'
-  };
-  return (
-    <Tag color={colors[difficulty]} style={{ borderRadius: 12, padding: '4px 8px' }}>
-      {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
-    </Tag>
-  );
-};
+const BRAND_COLOR = '#0067b8';
 
 export default function StudentAssignments() {
   const [assignments, setAssignments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedAssignment, setSelectedAssignment] = useState(null);
+  const [activeTab, setActiveTab] = useState('all');
+  const navigate = useNavigate();
+  const { currentUser } = useAuth();
 
   useEffect(() => {
     fetchAssignments();
@@ -45,132 +44,177 @@ export default function StudentAssignments() {
 
   const fetchAssignments = async () => {
     try {
+      // Fetch all assignments
       const q = query(collection(db, 'assignments'));
       const querySnapshot = await getDocs(q);
-      const assignmentList = querySnapshot.docs.map(doc => ({
+      const assignmentsList = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       }));
-      setAssignments(assignmentList);
+
+      // Fetch submissions for current user
+      const submissionsQuery = query(
+        collection(db, 'submissions'),
+        where('userId', '==', currentUser.uid)
+      );
+      const submissionsSnapshot = await getDocs(submissionsQuery);
+      const submissions = submissionsSnapshot.docs.map(doc => doc.data());
+
+      // Map submissions to assignments
+      const assignmentsWithStatus = assignmentsList.map(assignment => {
+        const submission = submissions.find(s => s.assignmentId === assignment.id);
+        return {
+          ...assignment,
+          submission
+        };
+      });
+
+      setAssignments(assignmentsWithStatus);
     } catch (error) {
-      toast.error('Failed to fetch assignments');
-      console.error('Error fetching assignments:', error);
+      message.error('Failed to fetch assignments');
+      console.error('Error:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleStartPractice = (assignment) => {
+    if (assignment.submission) {
+      // If there's a submission, navigate to review mode
+      navigate(`/student/practice/${assignment.id}`, { 
+        state: { 
+          mode: 'review'
+        }
+      });
+    } else {
+      // If no submission, navigate to practice mode
+      navigate(`/student/practice/${assignment.id}`);
     }
   };
 
   const getFilteredAssignments = (filter) => {
     switch (filter) {
       case 'pending':
-        return assignments.filter(a => !a.submitted);
+        return assignments.filter(a => !a.submission);
       case 'completed':
-        return assignments.filter(a => a.submitted);
+        return assignments.filter(a => a.submission);
       default:
         return assignments;
     }
   };
 
-  if (loading) {
-    return (
-      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '60vh' }}>
-        <Spin size="large" />
-      </div>
-    );
-  }
-
-  if (selectedAssignment) {
-    return (
-      <div style={{ height: '100vh' }}>
-        <div className="d-flex align-items-center justify-content-between p-3 bg-white border-bottom">
-          <Button
-            type="text"
-            icon={<LeftOutlined />}
-            onClick={() => setSelectedAssignment(null)}
-          >
-            Back to Assignments
-          </Button>
-          <Title level={4} style={{ margin: 0 }}>{selectedAssignment.title}</Title>
-        </div>
-        <PracticeLayout>
-          <ProblemStatement markdown={selectedAssignment.problemStatement} />
-          <PracticeSandpack starterCode={selectedAssignment.sampleCode} />
-        </PracticeLayout>
-      </div>
-    );
-  }
-
-  const items = [
+  const columns = [
     {
-      key: 'all',
-      label: (
+      title: 'Title',
+      dataIndex: 'title',
+      key: 'title',
+      render: (text, record) => (
         <Space>
-          <FileTextOutlined />
-          All Assignments
+          <CodeOutlined style={{ color: LANGUAGE_TEMPLATES[record.language]?.color }} />
+          <span style={{ fontWeight: 500 }}>{text}</span>
         </Space>
-      ),
-      children: (
-        <div className="mt-3">
-          {getFilteredAssignments('all').map((assignment) => (
-            <AssignmentCard
-              key={assignment.id}
-              assignment={assignment}
-              onSelect={setSelectedAssignment}
-            />
-          ))}
-        </div>
       ),
     },
     {
-      key: 'pending',
-      label: (
+      title: 'Language',
+      dataIndex: 'language',
+      key: 'language',
+      render: (language) => (
+        <Tag 
+          color={LANGUAGE_TEMPLATES[language]?.color} 
+          style={{ 
+            padding: '4px 8px',
+            borderRadius: '4px',
+            fontWeight: 500
+          }}
+        >
+          {LANGUAGE_TEMPLATES[language]?.icon} {LANGUAGE_TEMPLATES[language]?.name}
+        </Tag>
+      ),
+    },
+    {
+      title: 'Due Date',
+      dataIndex: 'dueDate',
+      key: 'dueDate',
+      render: (date) => (
         <Space>
           <ClockCircleOutlined />
-          Pending
+          <span>{new Date(date).toLocaleDateString()}</span>
         </Space>
-      ),
-      children: (
-        <div className="mt-3">
-          {getFilteredAssignments('pending').map((assignment) => (
-            <AssignmentCard
-              key={assignment.id}
-              assignment={assignment}
-              onSelect={setSelectedAssignment}
-            />
-          ))}
-        </div>
       ),
     },
     {
-      key: 'completed',
-      label: (
+      title: 'Status',
+      key: 'status',
+      render: (_, record) => {
+        const submission = record.submission;
+        return (
+          <Tag 
+            color={submission ? 'success' : 'warning'}
+            icon={submission ? <CheckCircleOutlined /> : <ClockCircleOutlined />}
+            style={{ 
+              padding: '4px 8px',
+              borderRadius: '4px',
+              fontWeight: 500
+            }}
+          >
+            {submission ? 'Completed' : 'Pending'}
+          </Tag>
+        );
+      },
+    },
+    {
+      title: 'Actions',
+      key: 'actions',
+      render: (_, record) => {
+        const submission = record.submission;
+        return (
         <Space>
-          <CheckCircleOutlined />
-          Completed
+            <Button
+              type="primary"
+              icon={<PlayCircleOutlined />}
+              onClick={() => handleStartPractice(record)}
+              style={{ 
+                borderRadius: '6px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+            >
+              {submission ? 'Review' : 'Start Practice'}
+            </Button>
         </Space>
-      ),
-      children: (
-        <div className="mt-3">
-          {getFilteredAssignments('completed').map((assignment) => (
-            <AssignmentCard
-              key={assignment.id}
-              assignment={assignment}
-              onSelect={setSelectedAssignment}
-            />
-          ))}
-        </div>
-      ),
+        );
+      },
     },
   ];
 
+  const filteredAssignments = getFilteredAssignments(activeTab);
+
   return (
-    <div className="container py-4">
-      <Row justify="space-between" align="middle" className="mb-4">
-        <Col>
-          <Title level={2} style={{ margin: 0, color: '#222' }}>My Assignments</Title>
-          <Text type="secondary">Track and manage your learning progress</Text>
-        </Col>
-        <Col>
+    <div style={{ padding: '24px' }}>
+      <Card 
+        bordered={false} 
+        style={{ 
+          borderRadius: 12, 
+          boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+          background: '#fff'
+        }}
+      >
+        <div style={{ 
+          marginBottom: 24, 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'flex-start' 
+        }}>
+          <div>
+            <Title level={2} style={{ margin: 0, color: BRAND_COLOR }}>
+              My Assignments
+            </Title>
+            <Text type="secondary">
+              Practice and complete your assignments
+            </Text>
+          </div>
           <Card
             bordered={false}
             style={{
@@ -183,101 +227,56 @@ export default function StudentAssignments() {
               <Text strong>{assignments.length} Total Assignments</Text>
             </Space>
           </Card>
-        </Col>
-      </Row>
+        </div>
 
+        <div style={{ marginBottom: 24 }}>
       <Tabs
-        defaultActiveKey="all"
-        items={items}
-        style={{
-          background: '#fff',
-          borderRadius: 16,
-          boxShadow: '0 2px 8px #f0f1f2',
-        }}
-      />
+            activeKey={activeTab}
+            onChange={setActiveTab}
+            items={[
+              { 
+                key: 'all', 
+                label: (
+                  <Space>
+                    <FileTextOutlined />
+                    All Assignments
+                  </Space>
+                )
+              },
+              { 
+                key: 'pending', 
+                label: (
+                  <Space>
+                    <ClockCircleOutlined />
+                    Pending
+                  </Space>
+                )
+              },
+              { 
+                key: 'completed', 
+                label: (
+                  <Space>
+                    <CheckCircleOutlined />
+                    Completed
+                  </Space>
+                )
+              }
+            ]}
+          />
+        </div>
+
+        <Table
+          dataSource={filteredAssignments}
+          columns={columns}
+          rowKey="id"
+          pagination={{ 
+            pageSize: 8,
+            showSizeChanger: true,
+            showTotal: (total) => `Total ${total} assignments`
+          }}
+          scroll={{ x: true }}
+        />
+      </Card>
     </div>
-  );
-}
-
-function AssignmentCard({ assignment, onSelect }) {
-  return (
-    <Card
-      className="mb-3"
-      bordered={false}
-      style={{
-        borderRadius: 12,
-        boxShadow: '0 2px 8px #f0f1f2',
-        transition: 'all 0.3s',
-      }}
-      bodyStyle={{ padding: '8px' }}
-      hoverable
-    >
-      <Row gutter={[16, 16]} align="middle">
-        <Col xs={24} md={18}>
-          <Space direction="vertical" size={12} style={{ width: '100%' }}>
-            <Space align="start">
-              <div
-                style={{
-                  width: 40,
-                  height: 40,
-                  background: 'linear-gradient(135deg, var(--primary-color) 0%, #1e3a8a 100%)',
-                  borderRadius: 8,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <BookOutlined style={{ fontSize: 20, color: '#fff' }} />
-              </div>
-              <div>
-                <Title level={4} style={{ margin: 0, fontSize: '18px' }}>{assignment.title}</Title>
-                <Space size={8} className="mt-1">
-                  {getDifficultyTag(assignment.difficulty)}
-                  <Tag
-                    color={assignment.submitted ? 'success' : 'warning'}
-                    style={{ borderRadius: 12, padding: '4px 8px' }}
-                  >
-                    {assignment.submitted ? 'Completed' : 'Pending'}
-                  </Tag>
-                </Space>
-              </div>
-            </Space>
-
-            <Text type="secondary" style={{ marginLeft: 56 }}>{assignment.description}</Text>
-
-            <Space size={24} style={{ marginLeft: 56 }}>
-              <Space>
-                <CalendarOutlined />
-                <Text type="secondary">Due: {new Date(assignment.dueDate).toLocaleDateString()}</Text>
-              </Space>
-              {assignment.submitted && (
-                <Space>
-                  <CheckCircleOutlined style={{ color: '#52c41a' }} />
-                  <Text type="secondary">
-                    Submitted: {new Date(assignment.submittedAt).toLocaleDateString()}
-                  </Text>
-                </Space>
-              )}
-            </Space>
-          </Space>
-        </Col>
-        <Col xs={24} md={6} style={{ textAlign: 'right' }}>
-          <Button
-            type="primary"
-            icon={<PlayCircleOutlined />}
-            onClick={() => onSelect(assignment)}
-            size="middle"
-            style={{
-              borderRadius: 6,
-              height: 36,
-              padding: '0 16px',
-            }}
-          >
-            {assignment.submitted ? 'Review' : 'Start'}
-            <ArrowRightOutlined />
-          </Button>
-        </Col>
-      </Row>
-    </Card>
   );
 }

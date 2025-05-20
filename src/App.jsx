@@ -23,6 +23,12 @@ import TrainerStudents from "./pages/trainer/Students";
 import TrainerBatches from "./pages/trainer/Batches";
 import TrainerMaterials from "./pages/trainer/Materials";
 import TrainerAssignments from "./pages/trainer/Assignments";
+import TrainerVideoUpload from "./pages/trainer/TrainerVideoUpload";
+import Submissions from './pages/trainer/Submissions';
+import ReviewSubmission from './pages/trainer/ReviewSubmission';
+import Courses from './pages/trainer/Courses';
+import CourseDetails from './pages/trainer/CourseDetails';
+import TrainerEnrollments from './pages/trainer/Enrollments';
 
 // Student Pages
 import StudentDashboard from "./pages/student/Dashboard";
@@ -30,10 +36,10 @@ import StudentCourses from "./pages/student/Courses";
 import StudentAssignments from "./pages/student/Assignments";
 import StudentProfile from "./pages/student/Profile";
 import Home from "./pages/Home/Home";
-import StudentPractice from "./pages/student/Practice";
+import Practice from "./pages/student/Practice";
 import StudentBatches from "./pages/student/Batches";
-import TrainerVideoUpload from "./pages/trainer/TrainerVideoUpload";
 import StudentVideos from "./pages/student/Videos";
+import StudentCourseDetails from "./pages/student/CourseDetails";
 
 // Protected Route component
 function ProtectedRoute({ children, allowedRoles }) {
@@ -71,6 +77,11 @@ function AppRoutes() {
                 <Route path="materials" element={<TrainerMaterials />} />
                 <Route path="assignments" element={<TrainerAssignments />} />
                 <Route path="video-upload" element={<TrainerVideoUpload />} />
+                <Route path="submissions" element={<Submissions />} />
+                <Route path="review/:id" element={<ReviewSubmission />} />
+                <Route path="courses" element={<Courses />} />
+                <Route path="courses/:id" element={<CourseDetails />} />
+                <Route path="enrollments" element={<TrainerEnrollments />} />
               </Routes>
             </DashboardLayout>
           </ProtectedRoute>
@@ -86,9 +97,10 @@ function AppRoutes() {
               <Routes>
                 <Route path="dashboard" element={<StudentDashboard />} />
                 <Route path="courses" element={<StudentCourses />} />
+                <Route path="courses/:id" element={<StudentCourseDetails />} />
                 <Route path="assignments" element={<StudentAssignments />} />
+                <Route path="practice/:id" element={<Practice />} />
                 <Route path="profile" element={<StudentProfile />} />
-                <Route path="practice" element={<StudentPractice />} />
                 <Route path="batches" element={<StudentBatches />} />
                 <Route path="videos" element={<StudentVideos />} />
               </Routes>

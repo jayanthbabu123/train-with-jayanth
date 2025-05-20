@@ -63,7 +63,6 @@ export default function ProblemStatement({ markdown }) {
         overflow: 'hidden'
       }}
       bodyStyle={{ 
-        padding: '24px',
         height: '100%',
         overflow: 'auto'
       }}

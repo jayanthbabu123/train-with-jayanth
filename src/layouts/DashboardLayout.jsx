@@ -16,6 +16,8 @@ import {
   VideoCameraOutlined,
   UsergroupAddOutlined,
   PlayCircleOutlined,
+  CheckCircleOutlined,
+  ReadOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "../contexts/AuthContext";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -28,10 +30,13 @@ const HOVER_COLOR = "#f0f7ff";
 
 const trainerNavigation = [
   { name: "Dashboard", href: "/trainer/dashboard", icon: <HomeOutlined /> },
-  { name: "Batches", href: "/trainer/batches", icon: <TeamOutlined /> },
+  { name: "Courses", href: "/trainer/courses", icon: <ReadOutlined /> },
+  // { name: "Batches", href: "/trainer/batches", icon: <TeamOutlined /> },
   { name: "Materials", href: "/trainer/materials", icon: <FileTextOutlined /> },
   { name: "Assignments", href: "/trainer/assignments", icon: <FileDoneOutlined /> },
   { name: "Students", href: "/trainer/students", icon: <UsergroupAddOutlined /> },
+  { name: "Enrollments", href: "/trainer/enrollments", icon: <CheckCircleOutlined /> },
+  { name: "Submissions", href: "/trainer/submissions", icon: <CheckCircleOutlined /> },
   { name: "Video Upload", href: "/trainer/video-upload", icon: <VideoCameraOutlined /> },
 ];
 
@@ -39,10 +44,10 @@ const studentNavigation = [
   { name: "Dashboard", href: "/student/dashboard", icon: <HomeOutlined /> },
   { name: "Courses", href: "/student/courses", icon: <BookOutlined /> },
   { name: "Assignments", href: "/student/assignments", icon: <FileDoneOutlined /> },
-  { name: "Practice", href: "/student/practice", icon: <CodeOutlined /> },
-  { name: "Videos", href: "/student/videos", icon: <PlayCircleOutlined /> },
-  { name: "Profile", href: "/student/profile", icon: <UserSwitchOutlined /> },
-  { name: "Batches", href: "/student/batches", icon: <TeamOutlined /> },
+  // { name: "Practice", href: "/student/practice/1", icon: <CodeOutlined /> },
+  // { name: "Batches", href: "/student/batches", icon: <TeamOutlined /> },
+  { name: "Videos", href: "/student/videos", icon: <VideoCameraOutlined /> },
+  { name: "Profile", href: "/student/profile", icon: <UserOutlined /> },
 ];
 
 const Logo = ({ collapsed }) => (

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
 import { db } from '../../services/firebase';
+import { useAuth } from '../../contexts/AuthContext';
 import toast from 'react-hot-toast';
 import { 
   Table, 
@@ -16,7 +17,11 @@ import {
   Col,
   Descriptions,
   Divider,
-  Statistic
+  Statistic,
+  message,
+  Select,
+  Form,
+  Input
 } from 'antd';
 import { 
   UserOutlined, 
@@ -38,6 +43,14 @@ export default function TrainerStudents() {
   const [loading, setLoading] = useState(true);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [form] = Form.useForm();
+  const [studentStats, setStudentStats] = useState({
+    totalAssignments: 0,
+    completedAssignments: 0,
+    submissions: []
+  });
+  const { currentUser } = useAuth();
 
   useEffect(() => {
     const fetchStudents = async () => {
@@ -60,9 +73,64 @@ export default function TrainerStudents() {
     fetchStudents();
   }, []);
 
-  const handleViewDetails = (student) => {
+  const fetchStudentStats = async (studentId) => {
+    try {
+      // Fetch total assignments
+      const assignmentsQuery = query(collection(db, 'assignments'));
+      const assignmentsSnapshot = await getDocs(assignmentsQuery);
+      const totalAssignments = assignmentsSnapshot.size;
+
+      // Fetch student's submissions
+      const submissionsQuery = query(
+        collection(db, 'submissions'),
+        where('userId', '==', studentId)
+      );
+      const submissionsSnapshot = await getDocs(submissionsQuery);
+      const submissions = submissionsSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+
+      setStudentStats({
+        totalAssignments,
+        completedAssignments: submissions.length,
+        submissions
+      });
+    } catch (error) {
+      console.error('Error fetching student stats:', error);
+    }
+  };
+
+  const handleViewDetails = async (student) => {
     setSelectedStudent(student);
     setIsModalVisible(true);
+    await fetchStudentStats(student.id);
+  };
+
+  const handleAssignBatch = (student) => {
+    setSelectedStudent(student);
+    form.setFieldsValue({
+      batchId: student.batchId || '',
+      batchName: student.batchName || ''
+    });
+    setModalVisible(true);
+  };
+
+  const handleSubmit = async (values) => {
+    try {
+      const studentRef = doc(db, 'users', selectedStudent.id);
+      await updateDoc(studentRef, {
+        batchId: values.batchId,
+        batchName: values.batchName
+      });
+
+      message.success('Batch assigned successfully');
+      setModalVisible(false);
+      fetchStudents(); // Refresh the list
+    } catch (error) {
+      message.error('Failed to assign batch');
+      console.error('Error:', error);
+    }
   };
 
   const formatDate = (date) => {
@@ -136,6 +204,26 @@ export default function TrainerStudents() {
       ),
     },
     {
+      title: 'Batch',
+      key: 'batch',
+      render: (_, record) => (
+        <Space direction="vertical" size="small">
+          {record.batchId ? (
+            <>
+              <Tag color="blue" icon={<TeamOutlined />}>
+                {record.batchName}
+              </Tag>
+              <Text type="secondary" style={{ fontSize: '12px' }}>
+                ID: {record.batchId}
+              </Text>
+            </>
+          ) : (
+            <Tag color="default">Not Assigned</Tag>
+          )}
+        </Space>
+      ),
+    },
+    {
       title: 'Actions',
       key: 'actions',
       render: (_, student) => (
@@ -156,7 +244,7 @@ export default function TrainerStudents() {
           <Button
             type="default"
             icon={<EditOutlined />}
-            onClick={() => {/* TODO: Edit student */}}
+            onClick={() => handleAssignBatch(student)}
             style={{ 
               borderRadius: '6px',
               display: 'flex',
@@ -164,7 +252,7 @@ export default function TrainerStudents() {
               gap: '4px'
             }}
           >
-            Edit
+            Assign Batch
           </Button>
         </Space>
       ),
@@ -191,7 +279,7 @@ export default function TrainerStudents() {
       >
         <div style={{ marginBottom: 24 }}>
           <Title level={2} style={{ margin: 0, color: BRAND_COLOR }}>
-            Student Management
+          Student Management
           </Title>
           <Text type="secondary">
             View and manage all your students
@@ -242,8 +330,8 @@ export default function TrainerStudents() {
               <Col span={8}>
                 <Card>
                   <Statistic
-                    title="Courses Enrolled"
-                    value={5}
+                    title="Total Assignments"
+                    value={studentStats.totalAssignments}
                     prefix={<BookOutlined />}
                     valueStyle={{ color: BRAND_COLOR }}
                   />
@@ -252,8 +340,8 @@ export default function TrainerStudents() {
               <Col span={8}>
                 <Card>
                   <Statistic
-                    title="Assignments Completed"
-                    value={12}
+                    title="Completed Assignments"
+                    value={studentStats.completedAssignments}
                     prefix={<TrophyOutlined />}
                     valueStyle={{ color: BRAND_COLOR }}
                   />
@@ -262,9 +350,11 @@ export default function TrainerStudents() {
               <Col span={8}>
                 <Card>
                   <Statistic
-                    title="Batch"
-                    value="2024A"
-                    prefix={<TeamOutlined />}
+                    title="Completion Rate"
+                    value={studentStats.totalAssignments ? 
+                      Math.round((studentStats.completedAssignments / studentStats.totalAssignments) * 100) : 0}
+                    suffix="%"
+                    prefix={<CheckCircleTwoTone twoToneColor="#52c41a" />}
                     valueStyle={{ color: BRAND_COLOR }}
                   />
                 </Card>
@@ -291,9 +381,104 @@ export default function TrainerStudents() {
                   {selectedStudent.status ? selectedStudent.status.charAt(0).toUpperCase() + selectedStudent.status.slice(1) : 'Active'}
                 </Tag>
               </Descriptions.Item>
+              <Descriptions.Item label="Batch" span={3}>
+                {selectedStudent.batchId ? (
+                  <Space direction="vertical" size="small">
+                    <Tag color="blue" icon={<TeamOutlined />}>
+                      {selectedStudent.batchName}
+                    </Tag>
+                    <Text type="secondary">
+                      Batch ID: {selectedStudent.batchId}
+                    </Text>
+                  </Space>
+                ) : (
+                  <Tag color="default">Not Assigned</Tag>
+                )}
+              </Descriptions.Item>
             </Descriptions>
+
+            <Divider />
+
+            <Title level={4}>Recent Submissions</Title>
+            <Table
+              dataSource={studentStats.submissions}
+              columns={[
+                {
+                  title: 'Assignment',
+                  dataIndex: 'assignmentTitle',
+                  key: 'assignmentTitle',
+                },
+                {
+                  title: 'Submitted At',
+                  dataIndex: 'submittedAt',
+                  key: 'submittedAt',
+                  render: (date) => formatDate(date?.toDate()),
+                },
+                {
+                  title: 'Language',
+                  dataIndex: 'language',
+                  key: 'language',
+                  render: (language) => (
+                    <Tag color={LANGUAGE_TEMPLATES[language]?.color}>
+                      {LANGUAGE_TEMPLATES[language]?.name}
+                    </Tag>
+                  ),
+                },
+                {
+                  title: 'Actions',
+                  key: 'actions',
+                  render: (_, submission) => (
+                    <Button
+                      type="link"
+                      icon={<EyeOutlined />}
+                      onClick={() => {
+                        // TODO: Implement view submission code feature
+                        message.info('View submission code feature coming soon');
+                      }}
+                    >
+                      View Code
+                    </Button>
+                  ),
+                },
+              ]}
+              pagination={false}
+              size="small"
+            />
           </>
         )}
+      </Modal>
+
+      <Modal
+        title="Assign Batch"
+        open={modalVisible}
+        onCancel={() => setModalVisible(false)}
+        footer={null}
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleSubmit}
+        >
+          <Form.Item
+            name="batchId"
+            label="Batch ID"
+            rules={[{ required: true, message: 'Please enter batch ID' }]}
+          >
+            <Input placeholder="Enter batch ID" />
+          </Form.Item>
+          <Form.Item
+            name="batchName"
+            label="Batch Name"
+            rules={[{ required: true, message: 'Please enter batch name' }]}
+          >
+            <Input placeholder="Enter batch name" />
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" htmlType="submit" block>
+              Assign Batch
+            </Button>
+          </Form.Item>
+        </Form>
       </Modal>
     </div>
   );

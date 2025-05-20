@@ -59,6 +59,7 @@ export default function Assignments() {
         id: doc.id,
         ...doc.data()
       }));
+      console.log(assignmentsList);
       setAssignments(assignmentsList);
     } catch (error) {
       message.error('Failed to fetch assignments');
@@ -123,19 +124,23 @@ export default function Assignments() {
   const handleEdit = (assignment) => {
     setEditingAssignment(assignment);
     
-    // Ensure we have proper files structure
+    // Ensure we have proper files structure and language template exists
     let codeFiles = assignment.defaultCode;
-    if (!codeFiles || typeof codeFiles !== 'object') {
-      codeFiles = {...LANGUAGE_TEMPLATES[assignment.language].files};
+    if (!codeFiles || typeof codeFiles !== 'object' || !LANGUAGE_TEMPLATES[assignment.language]) {
+      codeFiles = {...LANGUAGE_TEMPLATES.javascript.files}; // Fallback to javascript if language not found
     }
     
     setCurrentCode(codeFiles);
     setSandpackKey(Date.now());
     
+    // Reset form first to clear any previous values
+    form.resetFields();
+    
+    // Set form values with proper initialization
     form.setFieldsValue({
       title: assignment.title,
-      description: assignment.description,
-      language: assignment.language,
+      description: assignment.description || '', // Ensure description is set
+      language: assignment.language || 'javascript', // Fallback to javascript if language not found
       defaultCode: codeFiles,
       dueDate: assignment.dueDate
     });
@@ -295,13 +300,33 @@ export default function Assignments() {
           background: '#fff'
         }}
       >
-        <div style={{ marginBottom: 24 }}>
-          <Title level={2} style={{ margin: 0, color: BRAND_COLOR }}>
-            Assignment Management
-          </Title>
-          <Text type="secondary">
-            Create and manage programming assignments
-          </Text>
+        <div style={{ 
+          marginBottom: 24, 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'flex-start' 
+        }}>
+          <div>
+            <Title level={2} style={{ margin: 0, color: BRAND_COLOR }}>
+              Assignment Management
+            </Title>
+            <Text type="secondary">
+              Create and manage programming assignments
+            </Text>
+          </div>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={handleCreate}
+            style={{ 
+              borderRadius: '6px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}
+          >
+            Create Assignment
+          </Button>
         </div>
 
         <div style={{ marginBottom: 24 }}>
@@ -321,22 +346,6 @@ export default function Assignments() {
               }))
             ]}
           />
-        </div>
-
-        <div style={{ marginBottom: 16 }}>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={handleCreate}
-            style={{ 
-              borderRadius: '6px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px'
-            }}
-          >
-            Create Assignment
-          </Button>
         </div>
 
         <Table
@@ -406,6 +415,10 @@ export default function Assignments() {
                       border: 'none',
                       borderRadius: 0,
                       fontFamily: 'monospace'
+                    }}
+                    value={form.getFieldValue('description')}
+                    onChange={(e) => {
+                      form.setFieldsValue({ description: e.target.value });
                     }}
                   />
                 </div>

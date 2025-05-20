@@ -158,7 +158,7 @@ export default function TrainerVideoUpload() {
         message.success("Video updated successfully!");
       } else {
         await addDoc(collection(db, 'videos'), videoMetadata);
-        message.success("Video uploaded successfully!");
+      message.success("Video uploaded successfully!");
       }
 
       form.resetFields();
@@ -356,7 +356,7 @@ export default function TrainerVideoUpload() {
         <Text type="secondary">Upload and manage your training videos</Text>
       </div>
 
-      <Card 
+        <Card
         style={{ 
           borderRadius: '12px',
           boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
@@ -447,106 +447,106 @@ export default function TrainerVideoUpload() {
               </span>
             } 
             key="upload"
-          >
+        >
             <div style={{ padding: '24px' }}>
-              <Form
-                form={form}
-                layout="vertical"
+          <Form
+            form={form}
+            layout="vertical"
                 onFinish={handleVideoSubmit}
-                autoComplete="off"
-                initialValues={{ language: "", batch: "" }}
-              >
+            autoComplete="off"
+            initialValues={{ language: "", batch: "" }}
+          >
                 <Row gutter={[24, 16]}>
                   <Form.Item name="id" hidden>
                     <Input />
                   </Form.Item>
-                  <Col xs={24} md={12}>
-                    <Form.Item
-                      label="Video Title"
-                      name="title"
-                      rules={[{ required: true, message: "Please enter the video title" }]}
-                    >
+              <Col xs={24} md={12}>
+                <Form.Item
+                  label="Video Title"
+                  name="title"
+                  rules={[{ required: true, message: "Please enter the video title" }]}
+                >
                       <Input placeholder="Enter video title" size="large" />
-                    </Form.Item>
-                  </Col>
-                  <Col xs={24} md={12}>
-                    <Form.Item
-                      label="YouTube Link"
-                      name="link"
-                      rules={[
-                        { required: true, message: "Please enter a valid YouTube link" },
-                        {
-                          validator: (_, value) =>
-                            !value || getYoutubeEmbedUrl(value)
-                              ? Promise.resolve()
-                              : Promise.reject("Enter a valid YouTube link"),
-                        },
-                      ]}
-                    >
+                </Form.Item>
+              </Col>
+              <Col xs={24} md={12}>
+                <Form.Item
+                  label="YouTube Link"
+                  name="link"
+                  rules={[
+                    { required: true, message: "Please enter a valid YouTube link" },
+                    {
+                      validator: (_, value) =>
+                        !value || getYoutubeEmbedUrl(value)
+                          ? Promise.resolve()
+                          : Promise.reject("Enter a valid YouTube link"),
+                    },
+                  ]}
+                >
                       <Input 
                         placeholder="Paste YouTube video link" 
                         onChange={handleYouTubeLinkChange}
                         size="large"
                       />
-                    </Form.Item>
-                  </Col>
-                  <Col xs={24}>
-                    <Form.Item
-                      label="Description"
-                      name="description"
-                      rules={[{ required: true, message: "Please enter a description" }]}
-                    >
+                </Form.Item>
+              </Col>
+              <Col xs={24}>
+                <Form.Item
+                  label="Description"
+                  name="description"
+                  rules={[{ required: true, message: "Please enter a description" }]}
+                >
                       <Input.TextArea 
                         rows={2} 
                         placeholder="Describe the video content"
                         style={{ resize: 'none' }}
                       />
-                    </Form.Item>
-                  </Col>
-                  <Col xs={24} md={12}>
-                    <Form.Item
-                      label="Language"
-                      name="language"
-                      rules={[{ required: true, message: "Please select a language" }]}
-                    >
+                </Form.Item>
+              </Col>
+              <Col xs={24} md={12}>
+                <Form.Item
+                  label="Language"
+                  name="language"
+                  rules={[{ required: true, message: "Please select a language" }]}
+                >
                       <Select 
                         placeholder="Select language"
                         size="large"
                       >
-                        {LANGUAGES.map((lang) => (
-                          <Option key={lang} value={lang}>
-                            {lang}
-                          </Option>
-                        ))}
-                      </Select>
-                    </Form.Item>
-                  </Col>
-                  <Col xs={24} md={12}>
-                    <Form.Item
-                      label="Batch Number"
-                      name="batch"
-                      rules={[{ required: true, message: "Please enter the batch number" }]}
-                    >
+                    {LANGUAGES.map((lang) => (
+                      <Option key={lang} value={lang}>
+                        {lang}
+                      </Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </Col>
+              <Col xs={24} md={12}>
+                <Form.Item
+                  label="Batch Number"
+                  name="batch"
+                  rules={[{ required: true, message: "Please enter the batch number" }]}
+                >
                       <Input 
                         placeholder="e.g. 2024A"
                         size="large"
                       />
-                    </Form.Item>
-                  </Col>
-                  <Col xs={24}>
+                </Form.Item>
+              </Col>
+              <Col xs={24}>
                     <div style={{ 
                       marginBottom: '16px',
                       borderRadius: '8px',
                       overflow: 'hidden',
                       border: '1px solid #d9d9d9'
                     }}>
-                      {embedUrl ? (
+                  {embedUrl ? (
                         <div style={{ 
                           width: '100%',
                           aspectRatio: '16/9',
                           position: 'relative'
                         }}>
-                          <iframe
+                    <iframe
                             style={{ 
                               position: 'absolute',
                               top: 0,
@@ -555,12 +555,12 @@ export default function TrainerVideoUpload() {
                               height: '100%',
                               border: 'none'
                             }}
-                            src={embedUrl}
-                            title="YouTube Preview"
-                            allowFullScreen
-                          />
+                      src={embedUrl}
+                      title="YouTube Preview"
+                      allowFullScreen
+                    />
                         </div>
-                      ) : (
+                  ) : (
                         <div style={{ 
                           height: '400px',
                           display: 'flex',
@@ -571,10 +571,10 @@ export default function TrainerVideoUpload() {
                           <Text type="secondary">
                             Paste a valid YouTube link to preview
                           </Text>
-                        </div>
-                      )}
                     </div>
-                  </Col>
+                  )}
+                </div>
+              </Col>
                   <Col xs={24} style={{ textAlign: 'right' }}>
                     <Space>
                       <Button 
@@ -591,15 +591,15 @@ export default function TrainerVideoUpload() {
                         style={{ minWidth: '120px' }}
                       >
                         {loading ? "Processing..." : isEditMode ? "Update Video" : "Upload Video"}
-                      </Button>
+                </Button>
                     </Space>
-                  </Col>
-                </Row>
-              </Form>
+              </Col>
+            </Row>
+          </Form>
             </div>
           </TabPane>
         </Tabs>
-      </Card>
+        </Card>
 
       {/* Preview Modal */}
       <Modal
