@@ -14,7 +14,8 @@ import {
   Row,
   Col,
   Tooltip,
-  Modal
+  Modal,
+  Select
 } from 'antd';
 import {
   PlayCircleOutlined, 
@@ -35,6 +36,11 @@ export default function StudentAssignments() {
   const [assignments, setAssignments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('all');
+  const [filters, setFilters] = useState({
+    language: null,
+    topic: null,
+    level: null
+  });
   const navigate = useNavigate();
   const { currentUser } = useAuth();
 
@@ -117,7 +123,7 @@ export default function StudentAssignments() {
     },
     {
       title: 'Language',
-      dataIndex: 'language',
+      dataIndex: ['metadata', 'language'],
       key: 'language',
       render: (language) => (
         <Tag 
@@ -131,6 +137,30 @@ export default function StudentAssignments() {
           {LANGUAGE_TEMPLATES[language]?.icon} {LANGUAGE_TEMPLATES[language]?.name}
         </Tag>
       ),
+    },
+    {
+      title: 'Topic',
+      dataIndex: ['metadata', 'topic'],
+      key: 'topic',
+      render: (topic) => (
+        <Tag color="blue">{topic}</Tag>
+      ),
+    },
+    {
+      title: 'Level',
+      dataIndex: ['metadata', 'level'],
+      key: 'level',
+      render: (level) => {
+        const levelConfig = {
+          beginner: { color: 'green', label: 'Beginner' },
+          intermediate: { color: 'blue', label: 'Intermediate' },
+          advanced: { color: 'red', label: 'Advanced' }
+        };
+        const config = levelConfig[level] || { color: 'default', label: level };
+        return (
+          <Tag color={config.color}>{config.label}</Tag>
+        );
+      }
     },
     {
       title: 'Due Date',
@@ -166,30 +196,33 @@ export default function StudentAssignments() {
     {
       title: 'Actions',
       key: 'actions',
-      render: (_, record) => {
-        const submission = record.submission;
-        return (
-        <Space>
-            <Button
-              type="primary"
-              icon={<PlayCircleOutlined />}
-              onClick={() => handleStartPractice(record)}
-              style={{ 
-                borderRadius: '6px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px'
-              }}
-            >
-              {submission ? 'Review' : 'Start Practice'}
-            </Button>
-        </Space>
-        );
-      },
+      render: (_, record) => (
+        <Button
+          type="primary"
+          icon={<PlayCircleOutlined />}
+          onClick={() => navigate(`/student/practice/${record.id}`)}
+        >
+          {record.submission ? 'Review' : 'Start'}
+        </Button>
+      ),
     },
   ];
 
-  const filteredAssignments = getFilteredAssignments(activeTab);
+  const filteredAssignments = assignments.filter(assignment => {
+    if (activeTab !== 'all' && assignment.metadata?.language !== activeTab) {
+      return false;
+    }
+    if (filters.language && assignment.metadata?.language !== filters.language) {
+      return false;
+    }
+    if (filters.topic && assignment.metadata?.topic !== filters.topic) {
+      return false;
+    }
+    if (filters.level && assignment.metadata?.level !== filters.level) {
+      return false;
+    }
+    return true;
+  });
 
   return (
     <div style={{ padding: '24px' }}>
@@ -209,60 +242,77 @@ export default function StudentAssignments() {
         }}>
           <div>
             <Title level={2} style={{ margin: 0, color: BRAND_COLOR }}>
-              My Assignments
+              Assignments
             </Title>
             <Text type="secondary">
-              Practice and complete your assignments
+              Complete your programming assignments
             </Text>
           </div>
-          <Card
-            bordered={false}
-            style={{
-              background: '#f5f6fa',
-              borderRadius: 12,
-            }}
-          >
-            <Space>
-              <ReadOutlined style={{ fontSize: 20 }} />
-              <Text strong>{assignments.length} Total Assignments</Text>
-            </Space>
-          </Card>
         </div>
 
         <div style={{ marginBottom: 24 }}>
-      <Tabs
+          <Tabs
             activeKey={activeTab}
             onChange={setActiveTab}
             items={[
-              { 
-                key: 'all', 
+              { key: 'all', label: 'All Assignments' },
+              ...Object.entries(LANGUAGE_TEMPLATES).map(([key, lang]) => ({
+                key,
                 label: (
                   <Space>
-                    <FileTextOutlined />
-                    All Assignments
+                    <span>{lang.icon}</span>
+                    <span>{lang.name}</span>
                   </Space>
                 )
-              },
-              { 
-                key: 'pending', 
-                label: (
-                  <Space>
-                    <ClockCircleOutlined />
-                    Pending
-                  </Space>
-                )
-              },
-              { 
-                key: 'completed', 
-                label: (
-                  <Space>
-                    <CheckCircleOutlined />
-                    Completed
-                  </Space>
-                )
-              }
+              }))
             ]}
           />
+        </div>
+
+        <div style={{ marginBottom: 16 }}>
+          <Space wrap>
+            <Select
+              placeholder="Filter by Language"
+              style={{ width: 200 }}
+              allowClear
+              onChange={(value) => setFilters(prev => ({ ...prev, language: value }))}
+            >
+              {Object.entries(LANGUAGE_TEMPLATES).map(([key, lang]) => (
+                <Select.Option key={key} value={key}>
+                  <Space>
+                    <span>{lang.icon}</span>
+                    <span>{lang.name}</span>
+                  </Space>
+                </Select.Option>
+              ))}
+            </Select>
+            <Select
+              placeholder="Filter by Topic"
+              style={{ width: 200 }}
+              allowClear
+              onChange={(value) => setFilters(prev => ({ ...prev, topic: value }))}
+            >
+              {Array.from(new Set(assignments.map(a => a.metadata?.topic).filter(Boolean))).map(topic => (
+                <Select.Option key={topic} value={topic}>{topic}</Select.Option>
+              ))}
+            </Select>
+            <Select
+              placeholder="Filter by Level"
+              style={{ width: 200 }}
+              allowClear
+              onChange={(value) => setFilters(prev => ({ ...prev, level: value }))}
+            >
+              <Select.Option value="beginner">
+                <Tag color="green">Beginner</Tag>
+              </Select.Option>
+              <Select.Option value="intermediate">
+                <Tag color="blue">Intermediate</Tag>
+              </Select.Option>
+              <Select.Option value="advanced">
+                <Tag color="red">Advanced</Tag>
+              </Select.Option>
+            </Select>
+          </Space>
         </div>
 
         <Table

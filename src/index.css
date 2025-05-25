@@ -1,4 +1,6 @@
-@import "tailwindcss";
+@import 'antd/dist/reset.css'; 
+@import 'bootstrap/dist/css/bootstrap.min.css';
+
 @theme {
   --color-brand-blue: #3B82F6;   /* blue-500 */
   --color-brand-green: #22C55E;  /* green-500 */

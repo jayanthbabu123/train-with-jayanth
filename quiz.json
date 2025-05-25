@@ -1,0 +1,62 @@
+{
+    "title": "JavaScript Basics Quiz",
+    "level": "Beginner",
+    "questions": [
+      {
+        "question": "Which keyword is used to declare a variable in JavaScript?",
+        "options": ["define", "var", "const", "let"],
+        "answer": 1
+      },
+      {
+        "question": "What is the output of 'typeof null'?",
+        "options": ["'null'", "'object'", "'undefined'", "'boolean'"],
+        "answer": 1
+      },
+      {
+        "question": "Which method is used to convert JSON to a JavaScript object?",
+        "options": ["JSON.convert()", "JSON.parse()", "JSON.stringify()", "JSON.objectify()"],
+        "answer": 1
+      },
+      {
+        "question": "What does '===' do in JavaScript?",
+        "options": [
+          "Checks equality of value only",
+          "Assigns a value to a variable",
+          "Checks equality of value and type",
+          "Compares strings only"
+        ],
+        "answer": 2
+      },
+      {
+        "question": "Which of the following is a primitive data type in JavaScript?",
+        "options": ["String", "Array", "Object", "Function"],
+        "answer": 0
+      },
+      {
+        "question": "What will `console.log(2 + '2')` output?",
+        "options": ["4", "'22'", "NaN", "Error"],
+        "answer": 1
+      },
+      {
+        "question": "How do you write a comment in JavaScript?",
+        "options": ["<!-- comment -->", "# comment", "// comment", "/* comment"],
+        "answer": 2
+      },
+      {
+        "question": "Which of these is NOT a JavaScript loop?",
+        "options": ["for", "foreach", "while", "do...while"],
+        "answer": 1
+      },
+      {
+        "question": "What is the result of `Boolean('')`?",
+        "options": ["true", "false", "undefined", "null"],
+        "answer": 1
+      },
+      {
+        "question": "Which method adds an element to the end of an array?",
+        "options": ["push()", "pop()", "shift()", "unshift()"],
+        "answer": 0
+      }
+    ]
+  }
+  

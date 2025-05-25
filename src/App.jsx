@@ -29,6 +29,9 @@ import ReviewSubmission from './pages/trainer/ReviewSubmission';
 import Courses from './pages/trainer/Courses';
 import CourseDetails from './pages/trainer/CourseDetails';
 import TrainerEnrollments from './pages/trainer/Enrollments';
+import TrainerFeed from './pages/trainer/TrainerFeed';
+import TrainerQuizzes from './pages/trainer/Quizzes';
+import QuizzesByLanguage from './pages/trainer/QuizzesByLanguage';
 
 // Student Pages
 import StudentDashboard from "./pages/student/Dashboard";
@@ -40,6 +43,8 @@ import Practice from "./pages/student/Practice";
 import StudentBatches from "./pages/student/Batches";
 import StudentVideos from "./pages/student/Videos";
 import StudentCourseDetails from "./pages/student/CourseDetails";
+import StudentQuizzes from "./pages/student/Quizzes";
+import StudentQuizzesByLanguage from "./pages/student/QuizzesByLanguage";
 
 // Protected Route component
 function ProtectedRoute({ children, allowedRoles }) {
@@ -82,6 +87,9 @@ function AppRoutes() {
                 <Route path="courses" element={<Courses />} />
                 <Route path="courses/:id" element={<CourseDetails />} />
                 <Route path="enrollments" element={<TrainerEnrollments />} />
+                <Route path="feed" element={<TrainerFeed />} />
+                <Route path="quizzes" element={<TrainerQuizzes />} />
+                <Route path="quizzes/:language" element={<QuizzesByLanguage />} />
               </Routes>
             </DashboardLayout>
           </ProtectedRoute>
@@ -103,6 +111,8 @@ function AppRoutes() {
                 <Route path="profile" element={<StudentProfile />} />
                 <Route path="batches" element={<StudentBatches />} />
                 <Route path="videos" element={<StudentVideos />} />
+                <Route path="quizzes" element={<StudentQuizzes />} />
+                <Route path="quizzes/:language" element={<StudentQuizzesByLanguage />} />
               </Routes>
             </DashboardLayout>
           </ProtectedRoute>

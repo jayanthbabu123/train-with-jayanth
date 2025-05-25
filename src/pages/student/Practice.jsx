@@ -243,13 +243,20 @@ export default function Practice() {
             navigate("/student/assignments");
           }
         } else {
-          // Initialize with template code
-          const template = LANGUAGE_TEMPLATES[assignmentData.language];
-          if (template && template.files) {
-            setCode(template.files);
+          // First try to use the assignment's defaultCode if available
+          if (assignmentData.defaultCode && typeof assignmentData.defaultCode === 'object' && Object.keys(assignmentData.defaultCode).length > 0) {
+            console.log('Using assignment default code:', assignmentData.defaultCode);
+            setCode(assignmentData.defaultCode);
           } else {
-            // Fallback to default code from assignment
-            setCode(assignmentData.defaultCode || {});
+            // Fallback to language template if no defaultCode is available
+            console.log('No defaultCode found, using language template');
+            const template = LANGUAGE_TEMPLATES[assignmentData.language];
+            if (template && template.files) {
+              setCode(template.files);
+            } else {
+              // Ultimate fallback to JavaScript if nothing else works
+              setCode(LANGUAGE_TEMPLATES.javascript.files);
+            }
           }
         }
       } else {
@@ -295,14 +302,21 @@ export default function Practice() {
 
   const handleSubmitClick = () => {
     if (sandpackRef.current && sandpackRef.current.getFiles) {
-      const submittedFiles = sandpackRef.current.getFiles();
-      handleSubmit(submittedFiles);
+      try {
+        const submittedFiles = sandpackRef.current.getFiles();
+        console.log('Submitting files:', submittedFiles);
+        handleSubmit(submittedFiles);
+      } catch (error) {
+        console.error('Error getting files from Sandpack:', error);
+        message.error('Failed to prepare submission. Please try again.');
+      }
     } else {
       message.error("Could not read code files from editor");
     }
   };
 
   const handleSubmit = async (submittedFiles) => {
+    console.log('Handling submission with files:', submittedFiles);
     try {
       // Validate required fields
       if (!currentUser?.uid) {
@@ -406,6 +420,25 @@ export default function Practice() {
               />
             </Space>
           </div>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <Tag color={LANGUAGE_TEMPLATES[assignment.language]?.color}>
+              {LANGUAGE_TEMPLATES[assignment.language]?.icon} {LANGUAGE_TEMPLATES[assignment.language]?.name}
+            </Tag>
+            {assignment.metadata?.topic && (
+              <Tag color="blue">{assignment.metadata.topic}</Tag>
+            )}
+            {assignment.metadata?.level && (
+              <Tag 
+                color={
+                  assignment.metadata.level === 'beginner' ? 'green' :
+                  assignment.metadata.level === 'intermediate' ? 'blue' :
+                  'red'
+                }
+              >
+                {assignment.metadata.level.charAt(0).toUpperCase() + assignment.metadata.level.slice(1)}
+              </Tag>
+            )}
+          </div>
         </Space>
       </Card>
 
@@ -436,7 +469,7 @@ export default function Practice() {
           }}
         >
           <SandpackProvider
-            template={template.template}
+            template={template?.template || 'vanilla'}
             files={code}
             theme={freeCodeCampDark}
             options={{
@@ -444,8 +477,8 @@ export default function Practice() {
               recompileDelay: 1000,
               editorHeight: 280,
               editorWidthPercentage: 60,
-              activeFile: "/index.html",
-              visibleFiles: ["/index.html", "/index.js"],
+              activeFile: Object.keys(code)[0] || "/index.html",
+              visibleFiles: Object.keys(code) || ["/index.html", "/index.js"],
             }}
           >
             <SandpackEditor ref={sandpackRef} readOnly={isReviewMode} />

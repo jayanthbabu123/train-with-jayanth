@@ -34,6 +34,8 @@ const trainerNavigation = [
   // { name: "Batches", href: "/trainer/batches", icon: <TeamOutlined /> },
   { name: "Materials", href: "/trainer/materials", icon: <FileTextOutlined /> },
   { name: "Assignments", href: "/trainer/assignments", icon: <FileDoneOutlined /> },
+  { name: "Quizzes", href: "/trainer/quizzes", icon: <FileTextOutlined /> },
+  { name: "Feed", href: "/trainer/feed", icon: <ReadOutlined /> },
   { name: "Students", href: "/trainer/students", icon: <UsergroupAddOutlined /> },
   { name: "Enrollments", href: "/trainer/enrollments", icon: <CheckCircleOutlined /> },
   { name: "Submissions", href: "/trainer/submissions", icon: <CheckCircleOutlined /> },
@@ -44,8 +46,7 @@ const studentNavigation = [
   { name: "Dashboard", href: "/student/dashboard", icon: <HomeOutlined /> },
   { name: "Courses", href: "/student/courses", icon: <BookOutlined /> },
   { name: "Assignments", href: "/student/assignments", icon: <FileDoneOutlined /> },
-  // { name: "Practice", href: "/student/practice/1", icon: <CodeOutlined /> },
-  // { name: "Batches", href: "/student/batches", icon: <TeamOutlined /> },
+  { name: "Quizzes", href: "/student/quizzes", icon: <FileTextOutlined /> },
   { name: "Videos", href: "/student/videos", icon: <VideoCameraOutlined /> },
   { name: "Profile", href: "/student/profile", icon: <UserOutlined /> },
 ];
@@ -273,28 +274,6 @@ export default function DashboardLayout({ children }) {
             />
           </div>
           <div className="d-flex align-items-center gap-3">
-            <div className="d-none d-lg-flex align-items-center" style={{ marginRight: 16 }}>
-              {navigation.map((item) => (
-                <Link
-                  key={item.href}
-                  to={item.href}
-                  style={{
-                    color: location.pathname.indexOf(item.href) === 0 ? BRAND_COLOR : "#333",
-                    fontWeight: location.pathname.indexOf(item.href) === 0 ? 600 : 500,
-                    fontSize: 15,
-                    marginLeft: 24,
-                    textDecoration: "none",
-                    padding: "8px 12px",
-                    borderRadius: "8px",
-                    transition: "all 0.3s",
-                    backgroundColor: location.pathname.indexOf(item.href) === 0 ? HOVER_COLOR : "transparent"
-                  }}
-                  className="header-link"
-                >
-                  {item.name}
-                </Link>
-              ))}
-            </div>
             <Button
               type="text"
               icon={<BellOutlined style={{ fontSize: 20, color: BRAND_COLOR }} />}

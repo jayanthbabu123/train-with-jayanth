@@ -26,7 +26,16 @@ export const LANGUAGE_TEMPLATES = {
 </html>`,
       '/index.js': `// This file is required for the sandbox to work
 // No need to modify this file for HTML assignments`
-    }
+    },
+    concepts: [
+      'Elements & Structure',
+      'Forms',
+      'Semantic HTML',
+      'Tables',
+      'Media',
+      'Accessibility',
+      'SEO Basics'
+    ]
   },
   css: { 
     name: 'CSS', 
@@ -68,7 +77,16 @@ p {
       '/index.js': `// This file is required for the sandbox to work
 // Import CSS file to make styling work
 import "./styles.css";`
-    }
+    },
+    concepts: [
+      'Selectors',
+      'Box Model',
+      'Flexbox',
+      'Grid',
+      'Responsive Design',
+      'Animations',
+      'Variables'
+    ]
   },
   javascript: { 
     name: 'JavaScript', 
@@ -118,7 +136,16 @@ document.getElementById('app').innerHTML = greet('World');
 
 // Add more JavaScript code below
 console.log('JavaScript is running!');`
-    }
+    },
+    concepts: [
+      'Variables & Data Types',
+      'Control Flow',
+      'Functions',
+      'Arrays & Objects',
+      'DOM Manipulation',
+      'Async Programming',
+      'ES6+ Features'
+    ]
   },
   react: { 
     name: 'React', 
@@ -188,7 +215,16 @@ root.render(
     <App />
   </StrictMode>
 );`
-    }
+    },
+    concepts: [
+      'JSX',
+      'Components',
+      'Props & State',
+      'Hooks',
+      'Lifecycle',
+      'Context API',
+      'Routing'
+    ]
   },
   github: { 
     name: 'GitHub', 
