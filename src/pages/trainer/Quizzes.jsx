@@ -4,6 +4,7 @@ import { PlusOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../services/firebase';
+import PageHeader from '../../components/common/PageHeader';
 
 const { Title, Text } = Typography;
 
@@ -92,15 +93,10 @@ export default function TrainerQuizzes() {
 
   return (
     <div style={{ maxWidth: 1200, margin: '0 auto', padding: '32px 0' }}>
-      <div style={{ marginBottom: 40 }}>
-        <Title level={2} style={{ margin: 0, fontWeight: 800, color: '#1a1a1a' }}>
-          Quiz Management
-        </Title>
-        <Text style={{ fontSize: 16, color: '#666', marginTop: 8, display: 'block' }}>
-          Create and manage quizzes for different programming languages and technologies
-        </Text>
-        
-      </div>
+      <PageHeader
+        title="Quiz Management"
+        subtitle="Create and manage quizzes for different programming languages and technologies"
+      />
       <Row gutter={[32, 32]}>
         {LANGUAGES.map(lang => (
           <Col xs={24} sm={12} md={8} lg={6} key={lang.key}>

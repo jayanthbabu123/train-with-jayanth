@@ -7,6 +7,7 @@ import { Button, Row, Col, Typography, Spin, Empty, Card, Space } from 'antd';
 import CourseCard from '../../components/trainer/CourseCard';
 import CreateCourseModal from '../../components/trainer/CreateCourseModal';
 import CreateBatchModal from '../../components/trainer/CreateBatchModal';
+import PageHeader from '../../components/common/PageHeader';
 
 const { Title, Paragraph } = Typography;
 
@@ -40,33 +41,31 @@ const Courses = () => {
 
   return (
     <div className="container py-4">
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <Title level={2} className="mb-1">Course Management</Title>
-          <Paragraph className="text-muted mb-0">
-            Create and manage your training courses and batches
-          </Paragraph>
-        </div>
-        <Space>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => setIsCreateCourseModalOpen(true)}
-            size="large"
-          >
-            New Course
-          </Button>
-          <Button
-            type="primary"
-            icon={<TeamOutlined />}
-            onClick={() => setIsCreateBatchModalOpen(true)}
-            size="large"
-            className="bg-success border-success"
-          >
-            New Batch
-          </Button>
-        </Space>
-      </div>
+      <PageHeader
+        title="Course Management"
+        subtitle="Create and manage your training courses and batches"
+        extra={
+          <Space>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => setIsCreateCourseModalOpen(true)}
+              size="large"
+            >
+              New Course
+            </Button>
+            <Button
+              type="primary"
+              icon={<TeamOutlined />}
+              onClick={() => setIsCreateBatchModalOpen(true)}
+              size="large"
+              className="bg-success border-success"
+            >
+              New Batch
+            </Button>
+          </Space>
+        }
+      />
 
       {loading ? (
         <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '400px' }}>

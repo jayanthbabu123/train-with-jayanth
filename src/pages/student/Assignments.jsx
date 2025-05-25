@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { collection, query, getDocs, where } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { LANGUAGE_TEMPLATES } from '../../config/languageTemplates';
+import PageHeader from '../../components/common/PageHeader';
 import { 
   Card, 
   Button, 
@@ -234,21 +235,10 @@ export default function StudentAssignments() {
           background: '#fff'
         }}
       >
-        <div style={{ 
-          marginBottom: 24, 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'flex-start' 
-        }}>
-          <div>
-            <Title level={2} style={{ margin: 0, color: BRAND_COLOR }}>
-              Assignments
-            </Title>
-            <Text type="secondary">
-              Complete your programming assignments
-            </Text>
-          </div>
-        </div>
+        <PageHeader
+          title="Assignments"
+          subtitle="Complete your programming assignments"
+        />
 
         <div style={{ marginBottom: 24 }}>
           <Tabs

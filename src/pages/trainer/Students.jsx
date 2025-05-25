@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useLayoutEffect } from 'react';
 import { collection, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { useAuth } from '../../contexts/AuthContext';
 import toast from 'react-hot-toast';
+import PageHeader from '../../components/common/PageHeader';
 import { 
   Table, 
   Avatar, 
@@ -44,6 +45,7 @@ export default function TrainerStudents() {
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [form] = Form.useForm();
   const [studentStats, setStudentStats] = useState({
     totalAssignments: 0,
@@ -51,6 +53,13 @@ export default function TrainerStudents() {
     submissions: []
   });
   const { currentUser } = useAuth();
+  
+  // Handle window resize for responsive design
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     const fetchStudents = async () => {
@@ -227,7 +236,7 @@ export default function TrainerStudents() {
       title: 'Actions',
       key: 'actions',
       render: (_, student) => (
-        <Space>
+        <Space direction={windowWidth >= 768 ? 'horizontal' : 'vertical'} size="small">
           <Button
             type="primary"
             icon={<EyeOutlined />}
@@ -236,10 +245,13 @@ export default function TrainerStudents() {
               borderRadius: '6px',
               display: 'flex',
               alignItems: 'center',
-              gap: '4px'
+              gap: '4px',
+              fontSize: windowWidth >= 768 ? '14px' : '12px',
+              padding: windowWidth >= 768 ? '4px 15px' : '0 8px',
+              height: windowWidth >= 768 ? '32px' : '28px'
             }}
           >
-            View Details
+            {windowWidth >= 576 ? 'View Details' : 'View'}
           </Button>
           <Button
             type="default"
@@ -249,10 +261,13 @@ export default function TrainerStudents() {
               borderRadius: '6px',
               display: 'flex',
               alignItems: 'center',
-              gap: '4px'
+              gap: '4px',
+              fontSize: windowWidth >= 768 ? '14px' : '12px',
+              padding: windowWidth >= 768 ? '4px 15px' : '0 8px',
+              height: windowWidth >= 768 ? '32px' : '28px'
             }}
           >
-            Assign Batch
+            {windowWidth >= 576 ? 'Assign Batch' : 'Assign'}
           </Button>
         </Space>
       ),
@@ -268,35 +283,39 @@ export default function TrainerStudents() {
   }
 
   return (
-    <div style={{ padding: '24px' }}>
+    <div style={{ padding: windowWidth >= 768 ? '24px' : '0' }}>
       <Card 
         bordered={false} 
         style={{ 
           borderRadius: 12, 
           boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-          background: '#fff'
+          background: '#fff',
+          width: '100%',
+          overflow: 'hidden'
         }}
       >
-        <div style={{ marginBottom: 24 }}>
-          <Title level={2} style={{ margin: 0, color: BRAND_COLOR }}>
-          Student Management
-          </Title>
-          <Text type="secondary">
-            View and manage all your students
-          </Text>
-        </div>
-
-        <Table
-          dataSource={students}
-          columns={columns}
-          rowKey="id"
-          pagination={{ 
-            pageSize: 10,
-            showSizeChanger: true,
-            showTotal: (total) => `Total ${total} students`
-          }}
-          scroll={{ x: true }}
+        <PageHeader
+          title="Student Management"
+          subtitle="View and manage all your students"
         />
+
+        <div className="table-responsive" style={{ width: '100%', overflow: 'auto' }}>
+          <Table
+            dataSource={students}
+            columns={columns}
+            rowKey="id"
+            pagination={{ 
+              pageSize: 10,
+              showSizeChanger: windowWidth >= 768,
+              showTotal: (total) => `Total ${total} students`,
+              responsive: true,
+              size: windowWidth >= 768 ? 'default' : 'small'
+            }}
+            scroll={{ x: 'max-content' }}
+            style={{ width: '100%' }}
+            size={windowWidth >= 768 ? 'default' : 'small'}
+          />
+        </div>
       </Card>
 
       {/* Student Details Modal */}
@@ -304,7 +323,7 @@ export default function TrainerStudents() {
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <Avatar
-              size={40}
+              size={windowWidth >= 576 ? 40 : 32}
               src={selectedStudent?.photoURL || `https://ui-avatars.com/api/?name=${selectedStudent?.name}&background=${BRAND_COLOR.replace('#', '')}&color=fff`}
               icon={!selectedStudent?.photoURL && <UserOutlined />}
               style={{ 
@@ -313,21 +332,21 @@ export default function TrainerStudents() {
               }}
             />
             <div>
-              <Title level={4} style={{ margin: 0 }}>{selectedStudent?.name}</Title>
-              <Text type="secondary">{selectedStudent?.email}</Text>
+              <Title level={windowWidth >= 576 ? 4 : 5} style={{ margin: 0 }}>{selectedStudent?.name}</Title>
+              <Text type="secondary" style={{ fontSize: windowWidth >= 576 ? '14px' : '12px' }}>{selectedStudent?.email}</Text>
             </div>
           </div>
         }
         open={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         footer={null}
-        width={800}
+        width={windowWidth >= 768 ? 800 : '95%'}
         style={{ top: 20 }}
       >
         {selectedStudent && (
           <>
-            <Row gutter={[24, 24]} style={{ marginBottom: 24 }}>
-              <Col span={8}>
+            <Row gutter={[windowWidth >= 768 ? 24 : 12, windowWidth >= 768 ? 24 : 12]} style={{ marginBottom: 24 }}>
+              <Col xs={24} sm={24} md={8}>
                 <Card>
                   <Statistic
                     title="Total Assignments"
@@ -337,7 +356,7 @@ export default function TrainerStudents() {
                   />
                 </Card>
               </Col>
-              <Col span={8}>
+              <Col xs={24} sm={24} md={8}>
                 <Card>
                   <Statistic
                     title="Completed Assignments"
@@ -347,7 +366,7 @@ export default function TrainerStudents() {
                   />
                 </Card>
               </Col>
-              <Col span={8}>
+              <Col xs={24} sm={24} md={8}>
                 <Card>
                   <Statistic
                     title="Completion Rate"
@@ -400,9 +419,10 @@ export default function TrainerStudents() {
             <Divider />
 
             <Title level={4}>Recent Submissions</Title>
-            <Table
-              dataSource={studentStats.submissions}
-              columns={[
+            <div className="table-responsive" style={{ width: '100%', overflow: 'auto' }}>
+              <Table
+                dataSource={studentStats.submissions}
+                columns={[
                 {
                   title: 'Assignment',
                   dataIndex: 'assignmentTitle',
@@ -418,11 +438,29 @@ export default function TrainerStudents() {
                   title: 'Language',
                   dataIndex: 'language',
                   key: 'language',
-                  render: (language) => (
-                    <Tag color={LANGUAGE_TEMPLATES[language]?.color}>
-                      {LANGUAGE_TEMPLATES[language]?.name}
-                    </Tag>
-                  ),
+                  render: (language) => {
+                    const languageColors = {
+                      javascript: { color: '#f7df1e', name: 'JavaScript' },
+                      python: { color: '#3776ab', name: 'Python' },
+                      java: { color: '#007396', name: 'Java' },
+                      cpp: { color: '#00599c', name: 'C++' },
+                      csharp: { color: '#239120', name: 'C#' },
+                      typescript: { color: '#3178c6', name: 'TypeScript' },
+                      go: { color: '#00add8', name: 'Go' },
+                      ruby: { color: '#cc342d', name: 'Ruby' },
+                      php: { color: '#777bb4', name: 'PHP' },
+                      html: { color: '#e34f26', name: 'HTML' },
+                      css: { color: '#1572b6', name: 'CSS' },
+                      rust: { color: '#dea584', name: 'Rust' },
+                      swift: { color: '#fa7343', name: 'Swift' },
+                      kotlin: { color: '#7f52ff', name: 'Kotlin' }
+                    };
+                    return (
+                      <Tag color={languageColors[language]?.color || 'default'}>
+                        {languageColors[language]?.name || language}
+                      </Tag>
+                    );
+                  },
                 },
                 {
                   title: 'Actions',
@@ -440,10 +478,12 @@ export default function TrainerStudents() {
                     </Button>
                   ),
                 },
-              ]}
-              pagination={false}
-              size="small"
-            />
+                ]}
+                pagination={false}
+                size="small"
+                scroll={{ x: 'max-content' }}
+              />
+            </div>
           </>
         )}
       </Modal>

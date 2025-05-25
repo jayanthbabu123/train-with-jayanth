@@ -4,6 +4,7 @@ import ReactDOM from "react-dom/client";
 import 'antd/dist/reset.css'; // Ant Design v5+
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './index.css';
+import './styles/layout-fixes.css';
 import App from './App.jsx'
 import { ConfigProvider } from "antd";
 

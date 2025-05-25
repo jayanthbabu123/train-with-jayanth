@@ -3,6 +3,7 @@ import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { Card, Row, Col, Statistic, Typography, Space } from 'antd';
 import { useNavigate } from 'react-router-dom';
+import PageHeader from '../../components/common/PageHeader';
 import { 
   UserOutlined, 
   BookOutlined, 
@@ -60,7 +61,10 @@ export default function TrainerDashboard() {
 
   return (
     <div style={{ padding: '24px' }}>
-      <Title level={2}>Dashboard</Title>
+      <PageHeader
+        title="Dashboard"
+        subtitle="Overview of your training platform"
+      />
       
       <Row gutter={[24, 24]}>
         <Col xs={24} sm={12} lg={6}>

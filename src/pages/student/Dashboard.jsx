@@ -4,6 +4,7 @@ import { collection, query, orderBy, getDocs, startAfter, limit, where } from 'f
 import { db } from '../../services/firebase';
 import toast from 'react-hot-toast';
 import { Row, Col, Card, Spin, Typography, Empty, Divider, Progress, Tag, Space, Tooltip } from 'antd';
+import PageHeader from '../../components/common/PageHeader';
 import { 
   CheckCircleTwoTone, 
   CalendarTwoTone, 
@@ -154,17 +155,14 @@ export default function StudentDashboard() {
   return (
     <div style={{ background: '#f7fafd', minHeight: '100vh', padding: '32px 0' }}>
       <div className="container" style={{ maxWidth: 1400, margin: '0 auto' }}>
+        <PageHeader 
+          title={`Welcome back, ${currentUser.displayName}!`}
+          subtitle="Your learning journey at a glance"
+          titleColor={BRAND_COLOR}
+        />
         <Row gutter={[40, 40]} align="stretch">
           {/* Left: Analytics */}
           <Col xs={24} md={12} style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
-            <div className="mb-4">
-              <Title level={2} style={{ color: BRAND_COLOR, marginBottom: 0, fontWeight: 800, letterSpacing: 0.5 }}>
-                Welcome back, {currentUser.displayName}!
-              </Title>
-              <Text type="secondary" style={{ fontSize: 18, fontWeight: 500 }}>
-                Your learning journey at a glance
-              </Text>
-            </div>
 
             {/* Progress Overview Card */}
             <Card bordered={false} style={{ borderRadius: 18, boxShadow: '0 4px 24px #e6f1ff', background: '#fff' }}>

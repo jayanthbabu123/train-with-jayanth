@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { 
   Form, 
   Input, 
@@ -19,6 +19,7 @@ import {
   List,
   Switch
 } from "antd";
+import PageHeader from "../../components/common/PageHeader";
 import { 
   collection, 
   addDoc, 
@@ -76,9 +77,15 @@ export default function TrainerVideoUpload() {
   const [isEditMode, setIsEditMode] = useState(false);
   const { currentUser } = useAuth();
   const [activeTab, setActiveTab] = useState('videos');
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
   useEffect(() => {
     fetchVideos();
+    
+    // Add window resize listener for responsive design
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const fetchVideos = async () => {
@@ -219,9 +226,13 @@ export default function TrainerVideoUpload() {
       title: 'Video',
       dataIndex: 'thumbnail',
       key: 'thumbnail',
-      width: 120,
+      width: windowWidth < 768 ? 80 : 120,
       render: (thumbnail, record) => (
-        <div style={{ position: 'relative', width: 120, height: 68 }}>
+        <div style={{ 
+          position: 'relative', 
+          width: windowWidth < 768 ? 80 : 120, 
+          height: windowWidth < 768 ? 45 : 68 
+        }}>
           <img
             src={thumbnail}
             alt={record.title}
@@ -235,12 +246,12 @@ export default function TrainerVideoUpload() {
               transform: 'translate(-50%, -50%)',
               background: 'rgba(0, 0, 0, 0.6)',
               borderRadius: '50%',
-              padding: 8,
+              padding: windowWidth < 768 ? 4 : 8,
               cursor: 'pointer'
             }}
             onClick={() => handleVideoPreview(record)}
           >
-            <PlayCircleOutlined style={{ fontSize: 20, color: '#fff' }} />
+            <PlayCircleOutlined style={{ fontSize: windowWidth < 768 ? 16 : 20, color: '#fff' }} />
           </div>
         </div>
       )
@@ -249,14 +260,16 @@ export default function TrainerVideoUpload() {
       title: 'Title',
       dataIndex: 'title',
       key: 'title',
+      ellipsis: true,
+      width: windowWidth < 768 ? 150 : 'auto',
       render: (text, record) => (
-        <Space direction="vertical" size={4}>
-          <Text strong>{text}</Text>
-          <Space size={8}>
-            <Tag color="blue">{record.category}</Tag>
-            <Tag color="green">{record.batchId}</Tag>
+        <Space direction="vertical" size={2} style={{ width: '100%' }}>
+          <Text strong style={{ fontSize: windowWidth < 768 ? '12px' : '14px' }}>{text}</Text>
+          <Space size={4} wrap>
+            <Tag color="blue" style={{ fontSize: windowWidth < 768 ? '10px' : '12px', padding: '0 4px', margin: '2px', lineHeight: '16px' }}>{record.category}</Tag>
+            <Tag color="green" style={{ fontSize: windowWidth < 768 ? '10px' : '12px', padding: '0 4px', margin: '2px', lineHeight: '16px' }}>{record.batchId}</Tag>
             {record.uploadedBy === currentUser.uid && (
-              <Tag color="purple">Your Upload</Tag>
+              <Tag color="purple" style={{ fontSize: windowWidth < 768 ? '10px' : '12px', padding: '0 4px', margin: '2px', lineHeight: '16px' }}>Your Upload</Tag>
             )}
           </Space>
         </Space>
@@ -266,6 +279,7 @@ export default function TrainerVideoUpload() {
       title: 'Uploaded By',
       dataIndex: 'uploadedByName',
       key: 'uploadedByName',
+      responsive: ['md'],
       render: (text, record) => (
         <Space>
           <UserOutlined />
@@ -277,6 +291,7 @@ export default function TrainerVideoUpload() {
       title: 'Upload Date',
       dataIndex: 'uploadDate',
       key: 'uploadDate',
+      responsive: ['md'],
       render: (timestamp) => (
         <Space>
           <CalendarOutlined />
@@ -287,14 +302,17 @@ export default function TrainerVideoUpload() {
     {
       title: 'Actions',
       key: 'actions',
-      width: 120,
+      width: windowWidth < 768 ? 80 : 120,
+      fixed: 'right',
       render: (_, record) => (
-        <Space>
+        <Space size={2}>
           <Tooltip title="Preview">
             <Button 
-              type="text" 
-              icon={<EyeOutlined />} 
+              type="text"
+              size={windowWidth < 768 ? 'small' : 'middle'}
+              icon={<EyeOutlined style={{ fontSize: windowWidth < 768 ? 14 : 16 }} />} 
               onClick={() => handleVideoPreview(record)}
+              style={{ padding: windowWidth < 768 ? '0 4px' : undefined }}
             />
           </Tooltip>
           {record.uploadedBy === currentUser.uid && (
@@ -331,6 +349,40 @@ export default function TrainerVideoUpload() {
   const [searchText, setSearchText] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [showOnlyMine, setShowOnlyMine] = useState(false);
+  
+  // Add CSS to adjust table for mobile
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      @media (max-width: 768px) {
+        .video-table-row td {
+          padding: 8px 4px !important;
+        }
+        .video-management-card .ant-card-body {
+          padding: 0 !important;
+        }
+        .ant-tabs-tab {
+          padding: 8px 0 !important;
+          margin: 0 8px !important;
+        }
+        .video-table-row .ant-table-cell {
+          white-space: normal !important;
+          word-break: break-word !important;
+        }
+        .video-table-row .ant-space {
+          gap: 4px !important;
+        }
+        .ant-table-thead > tr > th {
+          padding: 8px 4px !important;
+          font-size: 12px !important;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
 
   const filteredVideos = videos.filter(video => {
     const matchesSearch = video.title.toLowerCase().includes(searchText.toLowerCase()) ||
@@ -348,29 +400,28 @@ export default function TrainerVideoUpload() {
       minHeight: 'calc(100vh - 64px)',
       background: '#f8f9fa'
     }}>
-      <div style={{ 
-        marginBottom: '32px',
-        textAlign: 'left'
-      }}>
-        <Title level={2} style={{ margin: 0 }}>Video Management</Title>
-        <Text type="secondary">Upload and manage your training videos</Text>
-      </div>
+      <PageHeader
+        title="Video Management"
+        subtitle="Upload and manage your training videos"
+      />
 
         <Card
         style={{ 
           borderRadius: '12px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+          boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+          overflow: 'hidden'
         }}
         bodyStyle={{ padding: 0 }}
+        className="video-management-card"
       >
         <Tabs 
           activeKey={activeTab}
           onChange={setActiveTab}
           type="card"
-          size="large"
+          size={windowWidth < 768 ? "middle" : "large"}
           style={{ 
             background: '#fff',
-            padding: '16px 16px 0',
+            padding: windowWidth < 768 ? '8px 8px 0' : '16px 16px 0',
             margin: 0
           }}
           tabBarStyle={{ 
@@ -387,55 +438,75 @@ export default function TrainerVideoUpload() {
             } 
             key="videos"
           >
-            <div style={{ padding: '24px' }}>
-              <div style={{ 
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '24px',
-                gap: '16px',
-                flexWrap: 'wrap'
-              }}>
-                <Input
-                  placeholder="Search videos..."
-                  prefix={<SearchOutlined />}
-                  style={{ width: '300px' }}
-                  size="large"
-                  onChange={(e) => handleVideoSearch(e.target.value)}
-                  value={searchText}
-                />
-                <Select
-                  placeholder="Filter by category"
-                  style={{ width: '200px' }}
-                  size="large"
-                  value={selectedCategory}
-                  onChange={handleCategoryFilter}
-                >
-                  <Option value="all">All Categories</Option>
-                  {LANGUAGES.map(category => (
-                    <Option key={category} value={category}>{category}</Option>
-                  ))}
-                </Select>
-                <Switch
-                  checkedChildren="My Videos"
-                  unCheckedChildren="All Videos"
-                  checked={showOnlyMine}
-                  onChange={handleOwnVideosFilter}
+            <div style={{ padding: windowWidth < 768 ? '8px' : '16px' }}>
+              <Row gutter={[12, 12]} style={{ marginBottom: '16px' }}>
+                <Col xs={24} sm={24} md={8} style={{ marginBottom: windowWidth < 768 ? 8 : 0 }}>
+                  <Input
+                    placeholder="Search videos..."
+                    prefix={<SearchOutlined />}
+                    style={{ width: '100%' }}
+                    size={windowWidth >= 768 ? 'large' : 'middle'}
+                    onChange={(e) => handleVideoSearch(e.target.value)}
+                    value={searchText}
+                  />
+                </Col>
+                <Col xs={16} sm={18} md={6} style={{ marginBottom: windowWidth < 768 ? 8 : 0 }}>
+                  <Select
+                    placeholder="Filter by category"
+                    style={{ width: '100%' }}
+                    size={windowWidth >= 768 ? 'large' : 'middle'}
+                    value={selectedCategory}
+                    onChange={handleCategoryFilter}
+                    dropdownMatchSelectWidth={false}
+                  >
+                    <Option value="all">All Categories</Option>
+                    {LANGUAGES.map(category => (
+                      <Option key={category} value={category}>{category}</Option>
+                    ))}
+                  </Select>
+                </Col>
+                <Col xs={8} sm={6} md={4} style={{ display: 'flex', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span style={{ fontSize: windowWidth < 768 ? '12px' : '14px', whiteSpace: 'nowrap' }}>My Videos</span>
+                    <Switch
+                      checked={showOnlyMine}
+                      onChange={handleOwnVideosFilter}
+                      size={windowWidth < 768 ? 'small' : 'default'}
+                    />
+                  </div>
+                </Col>
+              </Row>
+
+              <div className="table-responsive" style={{ width: '100%', overflow: 'auto', maxHeight: 'calc(100vh - 280px)', WebkitOverflowScrolling: 'touch' }}>
+                <Table
+                  columns={windowWidth < 768 ? 
+                    // Mobile columns - simplified
+                    [
+                      columns[0], // Video thumbnail
+                      columns[1], // Title with tags
+                      columns[4]  // Actions
+                    ] : 
+                    // Desktop columns - full
+                    columns.map(col => ({
+                      ...col,
+                      ellipsis: true
+                    }))
+                  }
+                  dataSource={filteredVideos}
+                  rowKey="id"
+                  loading={loading}
+                  pagination={{ 
+                    pageSize: windowWidth >= 768 ? 8 : 5,
+                    showSizeChanger: windowWidth >= 768,
+                    showTotal: (total) => `Total ${total} videos`,
+                    size: windowWidth >= 768 ? 'default' : 'small',
+                    simple: windowWidth < 768
+                  }}
+                  scroll={{ x: windowWidth < 768 ? 400 : 'max-content' }}
+                  size={windowWidth >= 768 ? 'default' : 'small'}
+                  rowClassName={() => 'video-table-row'}
                 />
               </div>
-
-              <Table
-                columns={columns}
-                dataSource={filteredVideos}
-                rowKey="id"
-                loading={loading}
-                pagination={{ 
-                  pageSize: 8,
-                  showSizeChanger: true,
-                  showTotal: (total) => `Total ${total} videos`
-                }}
-                scroll={{ x: 'max-content' }}
-              />
             </div>
           </TabPane>
 

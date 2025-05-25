@@ -10,6 +10,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../../services/firebase";
 import { LANGUAGE_TEMPLATES } from "../../config/languageTemplates";
+import PageHeader from "../../components/common/PageHeader";
 import {
   Card,
   Button,
@@ -638,44 +639,31 @@ export default function Assignments() {
           background: "#fff",
         }}
       >
-        <Breadcrumb style={{ marginBottom: 16 }}>
-          <Breadcrumb.Item>Assignments</Breadcrumb.Item>
-          <Breadcrumb.Item>
-            {editingAssignment
+        <PageHeader
+          title="Assignment Management"
+          subtitle="Create and manage programming assignments"
+          breadcrumbs={[
+            "Assignments",
+            editingAssignment
               ? "Edit Assignment: " + editingAssignment.title
-              : "Create New Assignment"}
-          </Breadcrumb.Item>
-        </Breadcrumb>
-        <div
-          style={{
-            marginBottom: 24,
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-          }}
-        >
-          <div>
-            <Title level={2} style={{ margin: 0, color: BRAND_COLOR }}>
-              Assignment Management
-            </Title>
-            <Text type="secondary">
-              Create and manage programming assignments
-            </Text>
-          </div>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={handleCreate}
-            style={{
-              borderRadius: "6px",
-              display: "flex",
-              alignItems: "center",
-              gap: "4px",
-            }}
-          >
-            Create Assignment
-          </Button>
-        </div>
+              : "Create New Assignment"
+          ]}
+          extra={
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={handleCreate}
+              style={{
+                borderRadius: "6px",
+                display: "flex",
+                alignItems: "center",
+                gap: "4px",
+              }}
+            >
+              Create Assignment
+            </Button>
+          }
+        />
 
         <div style={{ marginBottom: 24 }}>
           <Tabs

@@ -4,6 +4,7 @@ import { db } from '../../services/firebase';
 import toast from 'react-hot-toast';
 import { Table, Card, Button, Tag, Avatar, Spin, Space } from 'antd';
 import { FileTextOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import PageHeader from '../../components/common/PageHeader';
 
 const BRAND_COLOR = '#0067b8';
 
@@ -107,14 +108,15 @@ export default function TrainerMaterials() {
   return (
     <div className="container py-4">
       <Card bordered={false} style={{ borderRadius: 12, boxShadow: '0 2px 8px #f0f1f2' }}>
-        <div className="d-flex justify-content-between align-items-center mb-4">
-          <h1 style={{ color: 'var(--ant-primary-color)', fontWeight: 700, fontSize: 28 }}>
-            Learning Materials
-          </h1>
-          <Button type="primary" style={{ fontWeight: 600 }}>
-            Upload New Material
-          </Button>
-        </div>
+        <PageHeader
+          title="Learning Materials"
+          subtitle="Manage your course learning materials"
+          extra={
+            <Button type="primary" style={{ fontWeight: 600 }}>
+              Upload New Material
+            </Button>
+          }
+        />
         <Table
           dataSource={materials}
           columns={columns}
