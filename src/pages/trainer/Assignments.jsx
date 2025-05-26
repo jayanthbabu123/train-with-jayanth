@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   collection,
   query,
@@ -32,6 +32,7 @@ import {
   notification,
   Badge,
   Popconfirm,
+  Spin,
 } from "antd";
 import {
   PlusOutlined,
@@ -646,7 +647,7 @@ export default function Assignments() {
             "Assignments",
             editingAssignment
               ? "Edit Assignment: " + editingAssignment.title
-              : "Create New Assignment"
+              : "Create New Assignment",
           ]}
           extra={
             <Button
@@ -745,38 +746,16 @@ export default function Assignments() {
                   { required: true, message: "Please enter description" },
                 ]}
               >
-                <div
+                <TextArea
+                  rows={6}
+                  placeholder="Write your description in markdown format..."
                   style={{
                     border: "1px solid #d9d9d9",
                     borderRadius: "6px",
-                    overflow: "hidden",
+                    fontFamily: "monospace",
+                    marginBottom: 0,
                   }}
-                >
-                  <div
-                    style={{
-                      background: "#f5f5f5",
-                      padding: "8px 12px",
-                      borderBottom: "1px solid #d9d9d9",
-                      fontSize: "12px",
-                      color: "#666",
-                    }}
-                  >
-                    Markdown Editor
-                  </div>
-                  <TextArea
-                    rows={6}
-                    placeholder="Write your description in markdown format..."
-                    style={{
-                      border: "none",
-                      borderRadius: 0,
-                      fontFamily: "monospace",
-                    }}
-                    value={form.getFieldValue("description")}
-                    onChange={(e) => {
-                      form.setFieldsValue({ description: e.target.value });
-                    }}
-                  />
-                </div>
+                />
               </Form.Item>
               <div
                 style={{

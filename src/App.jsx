@@ -18,7 +18,7 @@ import Login from "./pages/auth/Login";
 import Unauthorized from "./pages/auth/Unauthorized";
 
 // Trainer Pages
-import TrainerDashboard from "./pages/trainer/TrainerDashboard";
+import TrainerDashboard from "./pages/trainer/NewTrainerDashboard";
 import TrainerStudents from "./pages/trainer/Students";
 import TrainerBatches from "./pages/trainer/Batches";
 import TrainerMaterials from "./pages/trainer/Materials";
