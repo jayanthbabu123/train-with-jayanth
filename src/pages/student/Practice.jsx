@@ -28,6 +28,8 @@ import {
   CheckCircleOutlined,
   ClockCircleOutlined,
   EyeOutlined,
+  FullscreenOutlined,
+  FullscreenExitOutlined,
 } from "@ant-design/icons";
 import PracticeLayout from "../../components/student/PracticeLayout";
 import ProblemStatement from "../../components/student/ProblemStatement";
@@ -80,7 +82,7 @@ const CodeEditorWithSubmit = forwardRef(({ readOnly }, ref) => {
 // Wrapper component that provides the layout
 const SandpackEditor = forwardRef(({ readOnly }, ref) => {
   return (
-    <PanelGroup direction="horizontal" style={{ flex: 1, minHeight: 0, height: "100%" }}>
+    <PanelGroup direction="horizontal" style={{ flex: 1, minHeight: 600, height: "100%" }}>
       <Panel
         defaultSize={50}
         minSize={25}
@@ -89,7 +91,7 @@ const SandpackEditor = forwardRef(({ readOnly }, ref) => {
           minWidth: 220,
           maxWidth: "80%",
           height: "100%",
-          minHeight: 0,
+          minHeight: 600,
           width: "100%",
           overflow: "auto",
           display: "flex",
@@ -124,7 +126,7 @@ const SandpackEditor = forwardRef(({ readOnly }, ref) => {
         style={{
           minWidth: 0,
           height: "100%",
-          minHeight: "400px",
+          minHeight: 600,
           display: "flex",
           flexDirection: "column",
           overflow: "hidden",
@@ -171,7 +173,7 @@ const SandpackEditor = forwardRef(({ readOnly }, ref) => {
             standalone={false}
             showHeader={true}
           />
-        </div>
+      </div>
       </Panel>
     </PanelGroup>
   );
@@ -192,6 +194,7 @@ export default function Practice() {
   });
   const isReviewMode = location.state?.mode === "review";
   const sandpackRef = useRef();
+  const [fullscreen, setFullscreen] = useState(false);
 
   useEffect(() => {
     fetchUserData();
@@ -369,7 +372,7 @@ export default function Practice() {
   };
 
   if (loading) {
-    return (
+  return (
       <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
         <Spin size="large" />
       </div>
@@ -385,76 +388,80 @@ export default function Practice() {
     (submissionStats.submittedCount / submissionStats.totalStudents) * 100;
 
   return (
-    <div style={{ height: "calc(100vh - 32px)" }}>
-      <Card style={{ marginBottom: 16, borderRadius: 8 }} bodyStyle={{ padding: 0 }}>
-        <Space direction="vertical" size="middle" style={{ width: "100%" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <Space>
-              <Button
-                type="text"
-                icon={<ArrowLeftOutlined />}
-                onClick={() => navigate("/student/assignments")}
-              >
-                Back to Assignments
-              </Button>
-              <Title level={3} style={{ margin: 0 }}>
-                {assignment.title}
-              </Title>
-              {isReviewMode && (
-                <Tag color="blue" icon={<EyeOutlined />}>
-                  Review Mode
+    <div >
+      {!fullscreen && (
+        <Card style={{ marginBottom: 16, borderRadius: 8 }} >
+          <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <Space>
+                <Button
+                  type="text"
+                  icon={<ArrowLeftOutlined />}
+                  onClick={() => navigate("/student/assignments")}
+                >
+                  Back to Assignments
+                </Button>
+                <Title level={3} style={{ margin: 0 }}>
+                  {assignment.title}
+                </Title>
+                {isReviewMode && (
+                  <Tag color="blue" icon={<EyeOutlined />}>
+                    Review Mode
+                  </Tag>
+                )}
+              </Space>
+              <Space>
+                <Text type="secondary">
+                  <ClockCircleOutlined /> Due: {new Date(assignment.dueDate).toLocaleDateString()}
+                </Text>
+                <Progress
+                  type="circle"
+                  percent={Math.round(submissionPercentage)}
+                  width={40}
+                  format={(percent) =>
+                    `${submissionStats.submittedCount}/${submissionStats.totalStudents}`
+                  }
+                />
+              </Space>
+            </div>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <Tag color={LANGUAGE_TEMPLATES[assignment.language]?.color}>
+                {LANGUAGE_TEMPLATES[assignment.language]?.icon} {LANGUAGE_TEMPLATES[assignment.language]?.name}
+              </Tag>
+              {assignment.metadata?.topic && (
+                <Tag color="blue">{assignment.metadata.topic}</Tag>
+              )}
+              {assignment.metadata?.level && (
+                <Tag 
+                  color={
+                    assignment.metadata.level === 'beginner' ? 'green' :
+                    assignment.metadata.level === 'intermediate' ? 'blue' :
+                    'red'
+                  }
+                >
+                  {assignment.metadata.level.charAt(0).toUpperCase() + assignment.metadata.level.slice(1)}
                 </Tag>
               )}
-            </Space>
-            <Space>
-              <Text type="secondary">
-                <ClockCircleOutlined /> Due: {new Date(assignment.dueDate).toLocaleDateString()}
-              </Text>
-              <Progress
-                type="circle"
-                percent={Math.round(submissionPercentage)}
-                width={40}
-                format={(percent) =>
-                  `${submissionStats.submittedCount}/${submissionStats.totalStudents}`
-                }
-              />
-            </Space>
-          </div>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <Tag color={LANGUAGE_TEMPLATES[assignment.language]?.color}>
-              {LANGUAGE_TEMPLATES[assignment.language]?.icon} {LANGUAGE_TEMPLATES[assignment.language]?.name}
-            </Tag>
-            {assignment.metadata?.topic && (
-              <Tag color="blue">{assignment.metadata.topic}</Tag>
-            )}
-            {assignment.metadata?.level && (
-              <Tag 
-                color={
-                  assignment.metadata.level === 'beginner' ? 'green' :
-                  assignment.metadata.level === 'intermediate' ? 'blue' :
-                  'red'
-                }
-              >
-                {assignment.metadata.level.charAt(0).toUpperCase() + assignment.metadata.level.slice(1)}
-              </Tag>
-            )}
-          </div>
-        </Space>
-      </Card>
-
-      <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100% - 80px)' }}>
-        {/* Problem Statement Row */}
-        <Card 
-          style={{ 
-            marginBottom: 16, 
-            borderRadius: 8,
-            maxHeight: '30%',
-            overflow: 'auto'
-          }}
-          bodyStyle={{ padding: 0 }}
-        >
-          <ProblemStatement markdown={assignment.description} />
+            </div>
+          </Space>
         </Card>
+      )}
+
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+        {/* Problem Statement Row */}
+        {!fullscreen && (
+          <Card 
+            style={{ 
+              marginBottom: 16, 
+              borderRadius: 8,
+              maxHeight: '400px',
+              overflow: 'auto'
+            }}
+            bodyStyle={{ padding: 0 }}
+          >
+            <ProblemStatement markdown={assignment.description} />
+          </Card>
+        )}
 
         {/* Code Editor and Preview Row */}
         <Card
@@ -463,42 +470,158 @@ export default function Practice() {
             flex: 1,
             background: "#1a1a1a",
             borderRadius: 8,
-            overflow: "hidden",
+            overflow: fullscreen ? "auto" : "hidden",
             display: "flex",
             flexDirection: "column",
+            height: fullscreen ? "100vh" : "auto",
+            minHeight: fullscreen ? "100vh" : 600,
+            zIndex: fullscreen ? 1001 : 'auto',
+            position: fullscreen ? 'fixed' : 'relative',
+            top: fullscreen ? 0 : 'auto',
+            left: fullscreen ? '50%' : 'auto',
+            transform: fullscreen ? 'translateX(-50%)' : 'none',
+            width: fullscreen ? '95%' : '100%',
+            maxWidth: fullscreen ? '1800px' : '100%',
+            boxShadow: fullscreen ? '0 0 0 9999px rgba(0,0,0,0.85)' : undefined,
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           }}
         >
-          <SandpackProvider
-            template={template?.template || 'vanilla'}
-            files={code}
-            theme={freeCodeCampDark}
-            options={{
-              recompileMode: "delayed",
-              recompileDelay: 1000,
-              editorHeight: 280,
-              editorWidthPercentage: 60,
-              activeFile: Object.keys(code)[0] || "/index.html",
-              visibleFiles: Object.keys(code) || ["/index.html", "/index.js"],
-            }}
-          >
-            <SandpackEditor ref={sandpackRef} readOnly={isReviewMode} />
-          </SandpackProvider>
-        </Card>
-
-        {/* Submit Button */}
-        {!isReviewMode && (
-          <div style={{ marginTop: 16, textAlign: 'right' }}>
-            <Button
-              type="primary"
-              size="large"
-              icon={<CheckCircleOutlined />}
-              onClick={handleSubmitClick}
-            >
-              Submit Assignment
-            </Button>
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            padding: fullscreen ? '12px 20px' : '8px 16px', 
+            background: fullscreen ? '#23272f' : 'transparent', 
+            zIndex: 2, 
+            borderBottom: fullscreen ? '1px solid #333' : undefined,
+            borderRadius: fullscreen ? '8px 8px 0 0' : 0,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              {fullscreen && (
+                <Text style={{ color: '#fff', fontSize: 16, fontWeight: 500 }}>
+                  {assignment.title}
+                </Text>
+              )}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              {fullscreen && !isReviewMode && (
+                <Button
+                  type="primary"
+                  icon={<CheckCircleOutlined />}
+                  onClick={handleSubmitClick}
+                  style={{ 
+                    fontWeight: 600,
+                    height: 36,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    padding: '0 16px',
+                    borderRadius: '8px',
+                    background: '#0067b8',
+                    border: 'none',
+                  }}
+                  className="hover-effect"
+                >
+                  Submit
+                </Button>
+              )}
+              <Button
+                type="text"
+                icon={fullscreen ? <FullscreenExitOutlined /> : <FullscreenOutlined />}
+                onClick={() => setFullscreen(f => !f)}
+                style={{ 
+                  color: fullscreen ? '#fff' : '#666',
+                  fontSize: 18,
+                  width: 36,
+                  height: 36,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: '8px',
+                  transition: 'all 0.2s',
+                  background: fullscreen ? 'rgba(255,255,255,0.1)' : 'transparent',
+                  border: 'none',
+                  padding: 0,
+                  marginLeft: 'auto',
+                }}
+                className="hover-effect"
+              />
+            </div>
           </div>
-        )}
+          <div style={{ 
+            flex: 1, 
+            minHeight: 0, 
+            display: 'flex', 
+            flexDirection: 'column', 
+            overflow: 'auto', 
+            borderRadius: fullscreen ? '0 0 8px 8px' : 0,
+            background: '#1a1a1a',
+          }}>
+            <SandpackProvider
+              template={template?.template || 'vanilla'}
+              files={code}
+              theme={freeCodeCampDark}
+              options={{
+                recompileMode: "delayed",
+                recompileDelay: 1000,
+                editorHeight: fullscreen ? 'calc(100vh - 60px)' : 600,
+                editorWidthPercentage: 60,
+                activeFile: Object.keys(code)[0] || "/index.html",
+                visibleFiles: Object.keys(code) || ["/index.html", "/index.js"],
+              }}
+            >
+              <SandpackEditor ref={sandpackRef} readOnly={isReviewMode} />
+            </SandpackProvider>
+          </div>
+        </Card>
       </div>
+
+      {/* Submit Assignment Button in Default View */}
+      {!fullscreen && !isReviewMode && (
+        <div style={{ 
+          marginTop: 16, 
+          marginBottom: 48,
+          display: 'flex',
+          justifyContent: 'flex-end',
+          padding: '0 16px'
+        }}>
+          <Button
+            type="primary"
+            icon={<CheckCircleOutlined />}
+            onClick={handleSubmitClick}
+            style={{ 
+              fontWeight: 600,
+              height: 40,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '0 24px',
+              borderRadius: '8px',
+              background: '#0067b8',
+              border: 'none',
+              minWidth: 180,
+            }}
+            className="hover-effect"
+          >
+            Submit Assignment
+          </Button>
+        </div>
+      )}
     </div>
   );
-} 
+}
+
+<style>
+  {`
+    .hover-effect:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    .hover-effect:active {
+      transform: translateY(0);
+    }
+    .hover-effect:hover {
+      background: rgba(255,255,255,0.15) !important;
+    }
+  `}
+</style>

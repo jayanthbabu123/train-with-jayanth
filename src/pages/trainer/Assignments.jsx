@@ -573,7 +573,7 @@ export default function Assignments() {
           }}
         >
           {status.charAt(0).toUpperCase() + status.slice(1)}
-        </Tag>
+    </Tag>
       ),
     },
     {
@@ -674,7 +674,7 @@ export default function Assignments() {
               { key: "all", label: "All Assignments" },
               ...Object.entries(LANGUAGE_TEMPLATES).map(([key, lang]) => ({
                 key,
-                label: (
+            label: (
                   <Space>
                     <span>{lang.icon}</span>
                     <span>{lang.name}</span>
@@ -699,7 +699,7 @@ export default function Assignments() {
       </Card>
 
       <Modal
-        title={
+              title={
           <Title level={4} style={{ margin: 0, color: BRAND_COLOR }}>
             {editingAssignment ? "Edit Assignment" : "Create Assignment"}
           </Title>
@@ -774,7 +774,7 @@ export default function Assignments() {
                   }}
                 >
                   Preview
-                </div>
+                  </div>
                 <div
                   style={{
                     fontSize: "14px",
@@ -784,7 +784,7 @@ export default function Assignments() {
                   <ReactMarkdown>
                     {form.getFieldValue("description") || ""}
                   </ReactMarkdown>
-                </div>
+                  </div>
               </div>
             </Col>
             <Col span={8}>
@@ -985,10 +985,10 @@ export default function Assignments() {
                       </Col>
                     </Row>
                   </SandpackProvider>
-                </div>
+              </div>
               </Form.Item>
-            </Col>
-          </Row>
+          </Col>
+      </Row>
           <div style={{ textAlign: "right", marginTop: 24, marginBottom: 16 }}>
             <Space size="middle">
               <Button
@@ -1018,4 +1018,4 @@ export default function Assignments() {
       </Modal>
     </div>
   );
-}
+} 

@@ -221,11 +221,11 @@ export default function Home() {
 
   const handleCTANavigate = useCallback(
     (path) => {
-      if (currentUser) {
-        navigate(path);
-      } else {
+    if (currentUser) {
+      navigate(path);
+    } else {
         navigate("/login");
-      }
+    }
     },
     [currentUser, navigate]
   );
@@ -285,7 +285,7 @@ export default function Home() {
               <div className="hero-description-secondary">
                 You can attend 7 classes for free to decide if you want to
                 continue.
-              </div>
+        </div>
               <div className="hero-stats-row">
                 <div className="hero-stat">
                   <div className="hero-stat-value">500+</div>
@@ -325,8 +325,8 @@ export default function Home() {
                 >
                   View My Courses
                 </Button>
-              </div>
-            </div>
+                </div>
+                </div>
             {/* Right Side: Feature Cards */}
             <div className="hero-right-content">
               <div className="feature-cards">
@@ -335,7 +335,7 @@ export default function Home() {
                     <div className="feature-emoji">{f.emoji}</div>
                     <div className="feature-title">{f.title}</div>
                     <div className="feature-desc">{f.desc}</div>
-                  </div>
+                </div>
                 ))}
               </div>
             </div>
@@ -377,7 +377,7 @@ export default function Home() {
           <div className="text-center mb-4">
             <div className="course-benefits-title">
               What You'll Get in This Course
-            </div>
+        </div>
             <div className="course-benefits-desc">
               A comprehensive learning experience designed to help you succeed in your career
             </div>
@@ -389,8 +389,8 @@ export default function Home() {
                 <div className="course-benefit-card-alt">
                   <div className="course-benefit-header">
                     <div className="course-benefit-icon-alt">
-                      {benefit.icon}
-                    </div>
+                    {benefit.icon}
+                  </div>
                     <div className="course-benefit-highlight-alt">
                       {benefit.highlight}
                     </div>
@@ -407,8 +407,8 @@ export default function Home() {
               </Col>
             ))}
           </Row>
-        </div>
-      </div>
+                </div>
+              </div>
 
       {/* Start Your Journey Section */}
       <div className="container mt-5">
@@ -426,7 +426,7 @@ export default function Home() {
               commitment required, and you can leave anytime if you're not
               satisfied.
             </Paragraph>
-          </div>
+            </div>
 
           <Row gutter={[24, 24]} className="mb-4">
             <Col xs={24} md={8}>
@@ -503,8 +503,8 @@ export default function Home() {
                     </div>
                     <div className="testimonial-author">
                       <div className="testimonial-avatar">
-                        {testimonial.avatar}
-                      </div>
+                    {testimonial.avatar}
+                  </div>
                       <div className="testimonial-info">
                         <div className="testimonial-name">
                           {testimonial.name}
@@ -512,8 +512,8 @@ export default function Home() {
                         <div className="testimonial-role">
                           {testimonial.role}
                         </div>
-                      </div>
-                    </div>
+                  </div>
+                </div>
                     <div className="testimonial-rating">
                       <Rate disabled defaultValue={5} />
                     </div>
@@ -529,35 +529,35 @@ export default function Home() {
       <div className="py-5 bg-white">
         <div className="container">
           <Row gutter={[48, 48]} className="align-items-center">
-            {/* Left Content */}
+              {/* Left Content */}
             <Col lg={12}>
               <div className="position-relative">
                 <div className="cta-title-new">
-                  Ready to Transform Your Career?
+                      Ready to Transform Your Career?
                 </div>
                 <div className="cta-desc-new">
-                  Take the first step towards becoming a professional developer. Join our next batch and start your journey today.
+                      Take the first step towards becoming a professional developer. Join our next batch and start your journey today.
                 </div>
 
                 <div className="cta-features">
                   <div className="cta-feature-item">
                     <div className="cta-feature-icon">
                       <CheckCircleOutlined />
-                    </div>
+                        </div>
                     <div className="cta-feature-content">
                       <div className="cta-feature-title">Next Batch Starting Soon</div>
                       <div className="cta-feature-desc">Limited seats available</div>
-                    </div>
-                  </div>
+                        </div>
+                      </div>
                   <div className="cta-feature-item">
                     <div className="cta-feature-icon">
                       <CheckCircleOutlined />
-                    </div>
+                        </div>
                     <div className="cta-feature-content">
                       <div className="cta-feature-title">7-Day Free Trial</div>
                       <div className="cta-feature-desc">Experience our training first-hand</div>
-                    </div>
-                  </div>
+                        </div>
+                      </div>
                   <div className="cta-feature-item">
                     <div className="cta-feature-icon">
                       <CheckCircleOutlined />
@@ -595,7 +595,7 @@ export default function Home() {
               </div>
             </Col>
 
-            {/* Right Content - Batch Info Card */}
+              {/* Right Content - Batch Info Card */}
             <Col lg={12}>
               <div className="cta-card-new">
                 <div className="cta-card-header">
@@ -613,7 +613,7 @@ export default function Home() {
                       <div className="cta-card-feature-label">Duration</div>
                       <div className="cta-card-feature-value">6 Months</div>
                     </div>
-                  </div>
+                      </div>
                   <div className="cta-card-feature">
                     <div className="cta-card-feature-icon">
                       <TeamOutlined />
@@ -638,9 +638,9 @@ export default function Home() {
                   <div className="cta-card-timer">
                     <ClockCircleOutlined />
                     <span>Limited seats available</span>
-                  </div>
-                </div>
               </div>
+            </div>
+          </div>
             </Col>
           </Row>
         </div>
@@ -656,7 +656,7 @@ export default function Home() {
                   Train With <span className="blue">Jayanth</span>
                 </div>
                 <div className="footer-desc">
-                  Dedicated to helping students master technology skills and build successful careers through personalized training and mentorship.
+                Dedicated to helping students master technology skills and build successful careers through personalized training and mentorship.
                 </div>
                 <div className="footer-social">
                   <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="social-link">
@@ -724,11 +724,11 @@ export default function Home() {
                 <Link to="/privacy" className="footer-bottom-link">Privacy</Link>
                 <Link to="/terms" className="footer-bottom-link">Terms</Link>
                 <Link to="/cookies" className="footer-bottom-link">Cookies</Link>
-              </div>
+            </div>
             </div>
           </div>
         </div>
       </footer>
     </div>
   );
-}
+} 

@@ -25,7 +25,8 @@ import {
   CodeOutlined,
   FileTextOutlined,
   ReadOutlined,
-  BarChartOutlined
+  BarChartOutlined,
+  EyeOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -198,13 +199,27 @@ export default function StudentAssignments() {
       title: 'Actions',
       key: 'actions',
       render: (_, record) => (
-        <Button
-          type="primary"
-          icon={<PlayCircleOutlined />}
-          onClick={() => navigate(`/student/practice/${record.id}`)}
-        >
-          {record.submission ? 'Review' : 'Start'}
-        </Button>
+        <Space>
+          {record.submission ? (
+            <Button
+              type="primary"
+              icon={<EyeOutlined />}
+              onClick={() => navigate(`/student/review/${record.id}`, {
+                state: { submissionId: `${record.id}_${currentUser.uid}` }
+              })}
+            >
+              Review
+            </Button>
+          ) : (
+            <Button
+              type="primary"
+              icon={<PlayCircleOutlined />}
+              onClick={() => navigate(`/student/practice/${record.id}`)}
+            >
+              Start
+            </Button>
+          )}
+        </Space>
       ),
     },
   ];

@@ -1,32 +1,29 @@
 import { useState, useEffect } from 'react';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../services/firebase';
-import { Card, Space, Typography, Button, message, Rate, Input } from 'antd';
+import { Card, Space, Typography, Button, Rate, Tag, Spin } from 'antd';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import { ArrowLeftOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, EyeOutlined } from '@ant-design/icons';
 import { SandpackProvider } from '@codesandbox/sandpack-react';
 import { freeCodeCampDark } from '@codesandbox/sandpack-themes';
 import PracticeSandpack from '../../components/student/PracticeSandpack';
 import { LANGUAGE_TEMPLATES } from '../../config/languageTemplates';
 
 const { Title, Text } = Typography;
-const { TextArea } = Input;
 
-export default function ReviewSubmission() {
+export default function ReviewAssignment() {
   const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [submission, setSubmission] = useState(null);
-  const [feedback, setFeedback] = useState('');
-  const [rating, setRating] = useState(0);
 
   useEffect(() => {
     if (location.state?.submissionId) {
       fetchSubmission();
     } else {
       message.error('Invalid submission');
-      navigate('/trainer/submissions');
+      navigate('/student/assignments');
     }
   }, [location.state?.submissionId]);
 
@@ -40,13 +37,12 @@ export default function ReviewSubmission() {
         setSubmission({
           id: submissionSnap.id,
           ...submissionData,
-          submittedAt: submissionData.submittedAt.toDate()
+          submittedAt: submissionData.submittedAt.toDate(),
+          reviewedAt: submissionData.reviewedAt?.toDate()
         });
-        setFeedback(submissionData.feedback || '');
-        setRating(submissionData.rating || 0);
       } else {
         message.error('Submission not found');
-        navigate('/trainer/submissions');
+        navigate('/student/assignments');
       }
     } catch (error) {
       console.error('Error fetching submission:', error);
@@ -56,26 +52,12 @@ export default function ReviewSubmission() {
     }
   };
 
-  const handleSubmitReview = async () => {
-    try {
-      const submissionRef = doc(db, 'submissions', submission.id);
-      await updateDoc(submissionRef, {
-        feedback,
-        rating,
-        status: 'reviewed',
-        reviewedAt: new Date()
-      });
-
-      message.success('Review submitted successfully');
-      navigate('/trainer/submissions');
-    } catch (error) {
-      console.error('Error submitting review:', error);
-      message.error('Failed to submit review');
-    }
-  };
-
   if (loading || !submission) {
-    return null;
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <Spin size="large" />
+      </div>
+    );
   }
 
   const template = LANGUAGE_TEMPLATES[submission.language]?.template || 'react';
@@ -93,38 +75,41 @@ export default function ReviewSubmission() {
               <Button
                 type="text"
                 icon={<ArrowLeftOutlined />}
-                onClick={() => navigate('/trainer/submissions')}
+                onClick={() => navigate('/student/assignments')}
               >
-                Back to Submissions
+                Back to Assignments
               </Button>
               <Title level={3} style={{ margin: 0 }}>
-                Review Submission
+                Review Assignment
               </Title>
+              <Tag color="blue" icon={<EyeOutlined />}>
+                Review Mode
+              </Tag>
             </Space>
           </div>
 
           <Card>
             <Space direction="vertical" size="large" style={{ width: '100%' }}>
               <div>
-                <Text strong>Student:</Text>
-                <Text> {submission.userName} ({submission.userEmail})</Text>
-              </div>
-              <div>
                 <Text strong>Assignment:</Text>
                 <Text> {submission.assignmentTitle}</Text>
-              </div>
-              <div>
-                <Text strong>Batch:</Text>
-                <Text> {submission.batchName}</Text>
               </div>
               <div>
                 <Text strong>Submitted:</Text>
                 <Text> {submission.submittedAt.toLocaleString()}</Text>
               </div>
+              <div>
+                <Text strong>Status:</Text>
+                <Tag 
+                  color={submission.status === 'submitted' ? 'processing' : 'success'}
+                >
+                  {submission.status.charAt(0).toUpperCase() + submission.status.slice(1)}
+                </Tag>
+              </div>
             </Space>
           </Card>
 
-          <Card title="Code Review">
+          <Card title="Your Submission">
             <SandpackProvider
               template={template}
               files={submission.code}
@@ -147,35 +132,37 @@ export default function ReviewSubmission() {
             </SandpackProvider>
           </Card>
 
-          <Card title="Feedback">
-            <Space direction="vertical" size="large" style={{ width: '100%' }}>
-              <div>
-                <Text strong>Rating:</Text>
-                <Rate 
-                  value={rating} 
-                  onChange={setRating}
-                  style={{ marginLeft: 16 }}
-                />
-              </div>
-              <div>
-                <Text strong>Comments:</Text>
-                <TextArea
-                  value={feedback}
-                  onChange={(e) => setFeedback(e.target.value)}
-                  rows={4}
-                  style={{ marginTop: 8 }}
-                  placeholder="Enter your feedback here..."
-                />
-              </div>
-              <Button 
-                type="primary" 
-                onClick={handleSubmitReview}
-                style={{ alignSelf: 'flex-end' }}
-              >
-                Submit Review
-              </Button>
-            </Space>
-          </Card>
+          {submission.status === 'reviewed' && (
+            <Card title="Trainer's Feedback">
+              <Space direction="vertical" size="large" style={{ width: '100%' }}>
+                <div>
+                  <Text strong>Rating:</Text>
+                  <Rate 
+                    value={submission.rating} 
+                    disabled
+                    style={{ marginLeft: 16 }}
+                  />
+                </div>
+                <div>
+                  <Text strong>Comments:</Text>
+                  <Card 
+                    style={{ 
+                      marginTop: 8,
+                      background: '#f5f5f5',
+                      border: '1px solid #e8e8e8'
+                    }}
+                  >
+                    <Text>{submission.feedback || 'No feedback provided.'}</Text>
+                  </Card>
+                </div>
+                <div>
+                  <Text type="secondary">
+                    Reviewed on: {submission.reviewedAt?.toLocaleString()}
+                  </Text>
+                </div>
+              </Space>
+            </Card>
+          )}
         </Space>
       </Card>
     </div>
