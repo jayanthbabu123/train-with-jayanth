@@ -303,7 +303,7 @@ export default function StudentDashboard() {
           {/* Right: Feed */}
           <Col xs={24} md={12} style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
             <Card bordered={false} style={{ borderRadius: 18, boxShadow: '0 4px 24px #e6f1ff', minHeight: 400, background: '#fff', padding: 0 }}>
-              <div style={{ padding: '32px 32px 0 32px' }}>
+              <div >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
                   <FireTwoTone twoToneColor={['#fa541c', '#faad14']} style={{ fontSize: 28 }} />
                   <Title level={4} style={{ margin: 0, color: '#222', fontWeight: 700, letterSpacing: 0.2 }}>Trainer Feed</Title>
@@ -313,7 +313,7 @@ export default function StudentDashboard() {
                 </Text>
               </div>
               <Divider style={{ margin: '24px 0 0 0' }} />
-              <div style={{ padding: '0 32px 32px 32px' }}>
+              <div >
                 <FeedList
                   feeds={feedPosts}
                   loading={feedLoading}
