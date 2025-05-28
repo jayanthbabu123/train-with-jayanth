@@ -46,6 +46,8 @@ import StudentCourseDetails from "./pages/student/CourseDetails";
 import StudentQuizzes from "./pages/student/Quizzes";
 import StudentQuizzesByLanguage from "./pages/student/QuizzesByLanguage";
 import ReviewAssignment from "./pages/student/ReviewAssignment";
+import TakeQuiz from './pages/student/TakeQuiz';
+import QuizResults from './pages/student/QuizResults';
 
 // Protected Route component
 function ProtectedRoute({ children, allowedRoles }) {
@@ -110,11 +112,13 @@ function AppRoutes() {
                 <Route path="assignments" element={<StudentAssignments />} />
                 <Route path="practice/:id" element={<Practice />} />
                 <Route path="review/:id" element={<ReviewAssignment />} />
+                <Route path="quizzes" element={<StudentQuizzes />} />
+                <Route path="quizzes/:language" element={<StudentQuizzesByLanguage />} />
+                <Route path="take-quiz/:id" element={<TakeQuiz />} />
+                <Route path="quiz-results/:id" element={<QuizResults />} />
                 <Route path="profile" element={<StudentProfile />} />
                 <Route path="batches" element={<StudentBatches />} />
                 <Route path="videos" element={<StudentVideos />} />
-                <Route path="quizzes" element={<StudentQuizzes />} />
-                <Route path="quizzes/:language" element={<StudentQuizzesByLanguage />} />
               </Routes>
             </DashboardLayout>
           </ProtectedRoute>

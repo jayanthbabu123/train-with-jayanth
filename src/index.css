@@ -88,9 +88,9 @@ html, body {
   border-radius: 12px !important;
 }
 
-.ant-card:hover {
-  box-shadow: 0 8px 16px rgba(0, 103, 184, 0.15) !important;
-  transform: translateY(-3px);
+.ant-card {
+  box-shadow: 0 0px 1px rgba(0, 103, 184, 0.15) !important;
+  /* transform: translateY(-3px); */
 }
 
 /* Statistic styles */
@@ -134,7 +134,6 @@ html, body {
 
 /* Ensure content expands fully */
 .ant-layout, .ant-layout-content {
-  width: 100%;
   max-width: 100%;
   display: flex;
   flex-direction: column;
@@ -142,10 +141,10 @@ html, body {
 }
 
 /* Make sure children of content area expand properly */
-.ant-layout-content > div {
+/* .ant-layout-content > div {
   width: 100%;
   max-width: 100%;
-}
+} */
 
 .sp-cm, .cm-scroller {
   overflow: auto !important;
@@ -164,10 +163,6 @@ html, body {
   .ant-layout-content {
     padding: 12px !important;
     margin: 0 !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    overflow-x: hidden !important;
-    overflow-y: auto !important;
     -webkit-overflow-scrolling: touch !important;
     height: auto !important;
     min-height: calc(100vh - 70px) !important;
@@ -274,8 +269,6 @@ html, body {
 
 /* Ensure content fills available space on all devices */
 .ant-layout-content {
-  width: 100% !important;
-  max-width: 100% !important;
   flex: 1 1 auto !important;
 }
   

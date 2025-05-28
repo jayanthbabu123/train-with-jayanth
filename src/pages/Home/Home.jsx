@@ -243,28 +243,37 @@ export default function Home() {
           </Link>
           <div className="navbar-links">
             {currentUser ? (
-              <>
-                <Link to="/student/dashboard" className="nav-link">
-                  Dashboard
+              currentUser.role === 'student' ? (
+                <>
+                  <Link to="/student/dashboard" className="nav-link">
+                    Dashboard
+                  </Link>
+                  <Link to="/student/courses" className="nav-link">
+                    Courses
+                  </Link>
+                  <Link to="/student/assignments" className="nav-link">
+                    Assignments
+                  </Link>
+                  <Link to="/student/profile" className="nav-link">
+                    Profile
+                  </Link>
+                </>
+              ) : (
+                <Link to="/trainer/dashboard" className="nav-link">
+                  Trainer Dashboard
                 </Link>
-                <Link to="/student/courses" className="nav-link">
-                  My Courses
-                </Link>
-                <Link to="/student/assignments" className="nav-link">
-                  Assignments
-                </Link>
-              </>
+              )
             ) : (
               <>
                 <Link to="/login" className="nav-link">
                   Login
                 </Link>
-                {/* <Link to="/signup" className="nav-link">
-                  Sign Up
-                </Link> */}
+                <Link to="/login" className="nav-button">
+                  Get Started
+                </Link>
               </>
             )}
-          </div>
+        </div>
         </nav>
         {/* SVG pattern is handled by CSS ::before */}
         <div className="container position-relative" style={{ zIndex: 2 }}>
@@ -272,60 +281,68 @@ export default function Home() {
             {/* Left Side */}
             <div className="hero-left-content">
               {/* <div className="hero-badge"><b>👋 Welcome to Train With Jayanth</b></div> */}
-              <div className="hero-title-gradient">
-                Learn & Grow with
-                <br />
-                Personalized Training
-              </div>
-              <div className="hero-description-main">
-                Join my training sessions to master new skills, get personalized
-                guidance, and achieve your learning goals with expert
-                mentorship.
-              </div>
-              <div className="hero-description-secondary">
-                You can attend 7 classes for free to decide if you want to
-                continue.
-        </div>
+              <div className="hero-badge">
+                <span>🚀</span> Start Your Coding Journey Today
+                </div>
+              <h1 className="hero-title-gradient">
+                Master Web Development with Expert Training
+                </h1>
+              <p className="hero-description-main">
+                Learn from industry experts, build real projects, and launch your career in web development.
+                </p>
+              <p className="hero-description-secondary">
+                Join our structured training program with personalized mentorship and hands-on practice.
+              </p>
               <div className="hero-stats-row">
-                <div className="hero-stat">
-                  <div className="hero-stat-value">500+</div>
-                  <div className="hero-stat-label">Active Students</div>
+                {stats.map((stat, index) => (
+                  <div key={index} className="hero-stat">
+                    <div className="hero-stat-value">{stat.number}</div>
+                    <div className="hero-stat-label">{stat.label}</div>
+                  </div>
+                ))}
                 </div>
-                <div className="hero-stat">
-                  <div className="hero-stat-value">10+</div>
-                  <div className="hero-stat-label">Training Batches</div>
-                </div>
-                <div className="hero-stat">
-                  <div className="hero-stat-value">98%</div>
-                  <div className="hero-stat-label">Student Satisfaction</div>
-                </div>
+              <div className="hero-cta-buttons">
+                {currentUser ? (
+                  currentUser.role === 'student' ? (
+                    <Button
+                      type="primary"
+                      size="large"
+                      className="hero-button-primary"
+                      onClick={() => navigate('/student/dashboard')}
+                    >
+                      Go to Dashboard
+                    </Button>
+                  ) : (
+                    <Button
+                      type="primary"
+                      size="large"
+                      className="hero-button-primary"
+                      onClick={() => navigate('/trainer/dashboard')}
+                    >
+                      Go to Trainer Dashboard
+                    </Button>
+                  )
+                ) : (
+                  <>
+                    <Button
+                      type="primary"
+                      size="large"
+                      className="hero-button-primary"
+                      onClick={() => navigate('/login')}
+                    >
+                      Get Started
+                    </Button>
+                    <Button
+                      type="default"
+                      size="large"
+                      className="hero-button-secondary"
+                      onClick={() => navigate('/login')}
+                    >
+                      Learn More
+                    </Button>
+                  </>
+                )}
               </div>
-              <div style={{ height: 32 }} />
-              <div style={{ display: "flex", gap: "1.5rem", marginBottom: 32 }}>
-                <Button
-                  type="primary"
-                  className="hero-button-primary"
-                  size="large"
-                  onClick={() =>
-                    handleCTANavigate(
-                      currentUser ? "/student/assignments" : "/login"
-                    )
-                  }
-                >
-                  Start Learning
-                </Button>
-                <Button
-                  className="hero-button-secondary"
-                  size="large"
-                  onClick={() =>
-                    handleCTANavigate(
-                      currentUser ? "/student/courses" : "/login"
-                    )
-                  }
-                >
-                  View My Courses
-                </Button>
-                </div>
                 </div>
             {/* Right Side: Feature Cards */}
             <div className="hero-right-content">

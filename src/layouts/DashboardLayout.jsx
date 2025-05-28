@@ -53,52 +53,55 @@ const studentNavigation = [
 ];
 
 const Logo = ({ collapsed, isMobile = false }) => (
-  <div
-    className="d-flex align-items-center gap-2 py-4 px-3 justify-content-center"
-    style={{ 
-      whiteSpace: "nowrap", 
-      overflow: "hidden",
-      borderBottom: "1px solid #f0f0f0",
-      marginBottom: "8px"
-    }}
-  >
+  <Link to="/" style={{ textDecoration: 'none' }}>
     <div
-      style={{
-        width: isMobile ? 36 : 42,
-        height: isMobile ? 36 : 42,
-        background: "linear-gradient(135deg, #0067b8 0%, #1e3a8a 100%)",
-        borderRadius: isMobile ? 10 : 12,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        fontWeight: "bold",
-        color: "#fff",
-        fontSize: isMobile ? 20 : 24,
-        marginRight: collapsed ? 0 : 12,
-        boxShadow: "0 4px 12px rgba(0, 103, 184, 0.2)",
-        transition: "all 0.3s ease"
+      className="d-flex align-items-center gap-2 py-4 px-3 justify-content-center"
+      style={{ 
+        whiteSpace: "nowrap", 
+        overflow: "hidden",
+        borderBottom: "1px solid #f0f0f0",
+        marginBottom: "8px",
+        cursor: "pointer"
       }}
     >
-      TJ
-    </div>
-    {!collapsed && (
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
-        <span className={`${isMobile ? 'fs-6' : 'fs-5'} fw-bold`} style={{ 
-          color: BRAND_COLOR, 
-          marginRight: 4,
-          letterSpacing: "0.5px"
-        }}>
-          TrainWith
-        </span>
-        <span className={`${isMobile ? 'fs-6' : 'fs-5'} fw-bold`} style={{ 
-          color: SECONDARY_COLOR,
-          letterSpacing: "0.5px"
-        }}>
-          Jayanth
-        </span>
+      <div
+        style={{
+          width: isMobile ? 36 : 42,
+          height: isMobile ? 36 : 42,
+          background: "linear-gradient(135deg, #0067b8 0%, #1e3a8a 100%)",
+          borderRadius: isMobile ? 10 : 12,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontWeight: "bold",
+          color: "#fff",
+          fontSize: isMobile ? 20 : 24,
+          marginRight: collapsed ? 0 : 12,
+          boxShadow: "0 4px 12px rgba(0, 103, 184, 0.2)",
+          transition: "all 0.3s ease"
+        }}
+      >
+        TJ
       </div>
-    )}
-  </div>
+      {!collapsed && (
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <span className={`${isMobile ? 'fs-6' : 'fs-5'} fw-bold`} style={{ 
+            color: BRAND_COLOR, 
+            marginRight: 4,
+            letterSpacing: "0.5px"
+          }}>
+            TrainWith
+          </span>
+          <span className={`${isMobile ? 'fs-6' : 'fs-5'} fw-bold`} style={{ 
+            color: SECONDARY_COLOR,
+            letterSpacing: "0.5px"
+          }}>
+            Jayanth
+          </span>
+        </div>
+      )}
+    </div>
+  </Link>
 );
 
 export default function DashboardLayout({ children }) {

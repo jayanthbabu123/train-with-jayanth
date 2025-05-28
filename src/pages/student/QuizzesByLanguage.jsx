@@ -1,11 +1,16 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { Card, Typography, Row, Col, Button, Empty, Spin, Modal, Tabs, Space, Badge, Tag, Tooltip } from 'antd';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Card, Typography, Row, Col, Button, Empty, Spin, Modal, Tabs, Space, Badge, Tag, Tooltip, Popconfirm } from 'antd';
+import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { LANGUAGES } from '../trainer/Quizzes';
+import { ClockCircleOutlined, QuestionCircleOutlined, CheckCircleOutlined, TrophyOutlined, HistoryOutlined, EyeOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import { useAuth } from '../../contexts/AuthContext';
+import { message } from 'antd';
+import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
+const BRAND_COLOR = '#0067b8';
 
 export default function StudentQuizzesByLanguage() {
   const { language } = useParams();
@@ -14,6 +19,9 @@ export default function StudentQuizzesByLanguage() {
   const [loading, setLoading] = useState(true);
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [quizToView, setQuizToView] = useState(null);
+  const navigate = useNavigate();
+  const { currentUser } = useAuth();
+  const [quizSubmissions, setQuizSubmissions] = useState({});
 
   const lang = LANGUAGES.find(l => l.key === language);
   const topics = lang?.topics || [];
@@ -23,24 +31,85 @@ export default function StudentQuizzesByLanguage() {
     setSelectedTopic(topics[0] || '');
   }, [language]);
 
-  // Fetch quizzes for the selected language/topic
-  const fetchQuizzes = async () => {
-    if (!lang || !selectedTopic) return;
-    setLoading(true);
-    const q = query(
-      collection(db, 'quizzes'),
-      where('language', '==', lang.key),
-      where('topic', '==', selectedTopic)
-    );
-    const snapshot = await getDocs(q);
-    setQuizzes(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-    setLoading(false);
+  useEffect(() => {
+    const fetchQuizzesAndSubmissions = async () => {
+      try {
+        // Fetch quizzes
+        const quizzesRef = collection(db, 'quizzes');
+        const q = query(quizzesRef, where('language', '==', language));
+        const querySnapshot = await getDocs(q);
+        const quizzesData = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setQuizzes(quizzesData);
+
+        // Fetch quiz submissions for this user
+        const submissionsRef = collection(db, 'quiz_submissions');
+        const submissionsQ = query(submissionsRef, where('userId', '==', currentUser.uid));
+        const submissionsSnap = await getDocs(submissionsQ);
+        const submissionsData = {};
+        submissionsSnap.forEach(doc => {
+          const data = doc.data();
+          if (!submissionsData[data.quizId] || (data.attemptNumber > submissionsData[data.quizId].attemptNumber)) {
+            submissionsData[data.quizId] = { ...data, id: doc.id };
+          }
+        });
+        setQuizSubmissions(submissionsData);
+      } catch (error) {
+        console.error('Error fetching quizzes or submissions:', error);
+        message.error('Failed to load quizzes');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchQuizzesAndSubmissions();
+  }, [language, currentUser.uid]);
+
+  const getStatusBadge = (quizId, quiz) => {
+    const submission = quizSubmissions[quizId];
+    console.log('QUIZ:', quizId, 'submission:', submission);
+    const status = submission?.status;
+    console.log('QUIZ:', quizId, 'status:', status);
+    if (!status) return null;
+
+    const statusConfig = {
+      passed: { color: 'success', text: 'Passed', icon: <CheckCircleOutlined /> },
+      failed: { color: 'error', text: 'Failed', icon: <CloseCircleOutlined /> },
+      in_progress: { color: 'processing', text: 'In Progress', icon: <ClockCircleOutlined /> }
+    };
+
+    const config = statusConfig[status];
+    return config ? (
+      <Tag color={config.color} className="ml-2" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+        {config.icon}
+        {config.text}
+      </Tag>
+    ) : null;
   };
 
-  useEffect(() => {
-    fetchQuizzes();
-    // eslint-disable-next-line
-  }, [lang, selectedTopic]);
+  const getScoreBadge = (quizId, quiz) => {
+    const submission = quizSubmissions[quizId];
+    console.log('QUIZ:', quizId, 'submission:', submission);
+    const score = submission?.score;
+    console.log('QUIZ:', quizId, 'score:', score);
+    if (score === undefined) return null;
+
+    return (
+      <Tag 
+        color={score >= (quiz?.passingScore || 70) ? 'success' : 'error'} 
+        className="ml-2"
+        style={{ display: 'flex', alignItems: 'center', gap: 4 }}
+      >
+        <TrophyOutlined />
+        {score.toFixed(1)}%
+      </Tag>
+    );
+  };
+
+  const handleViewResults = (quizId) => {
+    navigate(`/student/quiz-results/${quizId}`);
+  };
 
   if (!lang) {
     return <Empty description="Language not found" style={{ marginTop: 80 }} />;
@@ -49,22 +118,86 @@ export default function StudentQuizzesByLanguage() {
   return (
     <div style={{ maxWidth: 1400, margin: '0 auto', padding: '40px 0 0 0', minHeight: '100vh' }}>
       {/* Header */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 32,
-        marginBottom: 32,
-        background: 'linear-gradient(135deg, #f7fafd 60%, #e6f1ff 100%)',
-        borderRadius: 24,
-        padding: '32px 40px',
-        boxShadow: '0 4px 24px #e6f1ff',
-        width: '100%',
-        minHeight: 120
-      }}>
-        <img src={lang.logo} alt={lang.name} style={{ width: 80, height: 80, borderRadius: 18, background: '#fff', boxShadow: '0 2px 12px #e6f1ff', border: '2px solid #fff' }} />
-        <div style={{ flex: 1 }}>
-          <Title level={2} style={{ margin: 0, fontWeight: 900, color: '#0067b8', letterSpacing: 0.5 }}>{lang.name} Practice Quizzes</Title>
-          <Text style={{ fontSize: 18, color: '#444', marginTop: 8, display: 'block', fontWeight: 500 }}>{lang.description}</Text>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 18,
+          marginBottom: 20,
+          background: 'linear-gradient(120deg, #f7fafd 60%, #e6f1ff 100%)',
+          borderRadius: 16,
+          padding: '14px 18px',
+          boxShadow: '0 2px 12px #e6f1ff',
+          width: '100%',
+          minHeight: 70,
+          flexWrap: 'wrap'
+        }}
+      >
+        <div style={{
+          minWidth: 48,
+          minHeight: 48,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: '#fff',
+          borderRadius: 12,
+          boxShadow: '0 1px 6px #e6f1ff',
+          border: '1.5px solid #fff',
+          marginRight: 12
+        }}>
+          <img
+            src={lang.logo}
+            alt={lang.name}
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: 8,
+              objectFit: 'contain'
+            }}
+          />
+        </div>
+        <div style={{ flex: 1, minWidth: 160 }}>
+          <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0067b8', letterSpacing: 0.1, lineHeight: 1.5 }}>
+            {lang.name}
+          </div>
+          <div style={{ fontSize: '0.98rem', color: '#444', fontWeight: 500, marginTop: 2 }}>
+            {lang.description} Practice Quizzes to test your skills.
+          </div>
+          <div style={{ display: 'flex', gap: 8, marginTop: 7, flexWrap: 'wrap' }}>
+            <span style={{
+              background: '#f6ffed',
+              color: '#389e0d',
+              fontWeight: 600,
+              fontSize: '0.9rem',
+              borderRadius: 8,
+              padding: '2px 10px',
+              display: 'flex',
+              alignItems: 'center',
+              boxShadow: '0 1px 2px #e6f1ff'
+            }}>
+              <CheckCircleOutlined style={{ marginRight: 5, color: '#52c41a', fontSize: 14 }} />
+              {Object.values(quizSubmissions).filter(s => (
+                s.status === 'passed' ||
+                (s.score >= (quizzes.find(q => q.id === s.quizId)?.passingScore || 70))
+              )).length}
+              <span style={{ marginLeft: 5, color: '#444', fontWeight: 500, fontSize: '0.9rem' }}>Passed</span>
+            </span>
+            <span style={{
+              background: '#fff7e6',
+              color: '#d48806',
+              fontWeight: 600,
+              fontSize: '0.9rem',
+              borderRadius: 8,
+              padding: '2px 10px',
+              display: 'flex',
+              alignItems: 'center',
+              boxShadow: '0 1px 2px #e6f1ff'
+            }}>
+              <TrophyOutlined style={{ marginRight: 5, color: '#faad14', fontSize: 14 }} />
+              {quizzes.length}
+              <span style={{ marginLeft: 5, color: '#444', fontWeight: 500, fontSize: '0.9rem' }}>Total</span>
+            </span>
+          </div>
         </div>
       </div>
 
@@ -100,61 +233,116 @@ export default function StudentQuizzesByLanguage() {
             <Empty description={<span style={{ fontSize: 18 }}>No quizzes available for <b>{lang.name}</b> - <b>{selectedTopic}</b></span>} style={{ margin: '64px 0' }} />
           ) : (
             <Row gutter={[32, 32]} style={{ width: '100%' }}>
-              {quizzes.map(quiz => (
-                <Col xs={24} sm={12} md={8} lg={6} key={quiz.id}>
-                  <Card
-                    bordered={false}
-                    style={{
-                      borderRadius: 20,
-                      boxShadow: '0 8px 32px 0 rgba(0, 103, 184, 0.10)',
-                      minHeight: 210,
-                      background: 'linear-gradient(135deg, #fafdff 60%, #e6f1ff 100%)',
-                      transition: 'box-shadow 0.2s, transform 0.2s',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'flex-start',
-                      border: '1.5px solid #e6f1ff',
-                      marginBottom: 24,
-                      position: 'relative',
-                      overflow: 'hidden',
-                    }}
-                    bodyStyle={{ padding: 24, display: 'flex', flexDirection: 'column', height: '100%' }}
-                    hoverable
-                    onClick={() => {
-                      setQuizToView(quiz);
-                      setViewModalOpen(true);
-                    }}
-                  >
-                    {/* 1st row: Title */}
-                    <div style={{ marginBottom: 10 }}>
-                      <Tooltip title={quiz.title}>
-                        <Title level={4} style={{ margin: 0, fontWeight: 800, color: '#0067b8', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 200 }}>{quiz.title}</Title>
-                      </Tooltip>
-                    </div>
-                    {/* 2nd row: Topic and Level badges */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-                      <Tag color="geekblue" style={{ fontWeight: 500, borderRadius: 8, fontSize: 14 }}>{quiz.topic}</Tag>
-                      <Tag color={quiz.level?.toLowerCase() === 'beginner' ? 'green' : quiz.level?.toLowerCase() === 'intermediate' ? 'blue' : quiz.level?.toLowerCase() === 'advanced' ? 'volcano' : 'gold'} style={{ fontWeight: 600, fontSize: 14, borderRadius: 8 }}>{quiz.level || 'General'}</Tag>
-                    </div>
-                    {/* 3rd row: Total questions */}
-                    <div style={{ marginBottom: 14 }}>
-                      <Badge count={quiz.questions?.length || 0} style={{ backgroundColor: '#0067b8', fontWeight: 600, fontSize: 15 }}>
-                        <span style={{ color: '#222', fontWeight: 500, fontSize: 15 }}>Questions</span>
-                      </Badge>
-                    </div>
-                    {/* 4th row: Start Quiz button */}
-                    <div style={{ display: 'flex', justifyContent: 'center', marginTop: 'auto' }}>
-                      <Button type="primary" style={{ width: '100%', fontWeight: 600 }}>
-                        Start Quiz
+              {quizzes.map(quiz => {
+                const submission = quizSubmissions[quiz.id];
+                const passingScore = quiz.passingScore || 70;
+                const status = submission?.status ?? (submission ? (submission.score >= passingScore ? 'passed' : 'failed') : undefined);
+                const score = submission?.score;
+                const attemptNumber = submission?.attemptNumber;
+                const lastAttempt = submission?.submittedAt ? dayjs(submission.submittedAt.toDate ? submission.submittedAt.toDate() : submission.submittedAt).format('DD MMM YYYY, HH:mm') : null;
+
+                return (
+                  <Col xs={24} sm={12} md={8} lg={6} xxl={5} key={quiz.id}>
+                    <Card
+                      bordered={false}
+                      style={{
+                        borderRadius: 14,
+                        minHeight: 240,
+                        background: '#fff',
+                        border: '1px solid #e6eaf0',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
+                        marginBottom: 28,
+                        padding: 0,
+                        maxWidth: 440,
+                        width: 400,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between'
+                      }}
+                      bodyStyle={{ padding: 20, display: 'flex', flexDirection: 'column', height: '100%' }}
+                    >
+                      {/* Header */}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                        <Tooltip title={quiz.title}>
+                          <span style={{
+                            fontWeight: 700,
+                            fontSize: 17,
+                            color: '#1a1a1a',
+                            wordBreak: 'break-word',
+                            maxHeight: 48,
+                            overflow: 'hidden',
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            maxWidth: 260
+                          }}>{quiz.title}</span>
+                        </Tooltip>
+                        {status === 'passed' && <Tag color="green" style={{ fontSize: 12, borderRadius: 12, marginLeft: 8, padding: '2px 10px' }}><CheckCircleOutlined /> Passed</Tag>}
+                        {status === 'failed' && <Tag color="red" style={{ fontSize: 12, borderRadius: 12, marginLeft: 8, padding: '2px 10px' }}><CloseCircleOutlined /> Not Passed</Tag>}
+                      </div>
+                      {/* Subheader */}
+                      <div style={{ display: 'flex', gap: 8, marginBottom: 6 }}>
+                        <Tag color="geekblue" style={{ fontSize: 12, borderRadius: 8 }}>{quiz.topic}</Tag>
+                        <Tag color={quiz.level?.toLowerCase() === 'beginner' ? 'green' : quiz.level?.toLowerCase() === 'intermediate' ? 'blue' : quiz.level?.toLowerCase() === 'advanced' ? 'volcano' : 'gold'} style={{ fontSize: 12, borderRadius: 8 }}>{quiz.level || 'General'}</Tag>
+                      </div>
+                      <div style={{ borderBottom: '1px solid #f0f0f0', margin: '8px 0' }} />
+                      {/* Quiz Info */}
+                      <div style={{ display: 'flex', gap: 14, fontSize: 13, color: '#666', marginBottom: 8 }}>
+                        <span><ClockCircleOutlined style={{ marginRight: 3 }} /> 15m</span>
+                        <span><QuestionCircleOutlined style={{ marginRight: 3 }} /> {quiz.questions?.length || 0} Qs</span>
+                        {quiz.passingScore && <span><CheckCircleOutlined style={{ marginRight: 3 }} /> {quiz.passingScore}%</span>}
+                      </div>
+                      {/* Last Attempt */}
+                      {submission && (
+                        <div style={{
+                          background: status === 'passed' ? '#f6ffed' : '#fff2f0',
+                          border: '1px solid',
+                          borderColor: status === 'passed' ? '#b7eb8f' : '#ffccc7',
+                          borderRadius: 8,
+                          padding: '8px 10px',
+                          marginBottom: 8,
+                          fontSize: 12,
+                          color: '#222',
+                          display: 'grid',
+                          gridTemplateColumns: '1fr 1fr',
+                          gap: 4,
+                          alignItems: 'center'
+                        }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <TrophyOutlined style={{ color: status === 'passed' ? '#52c41a' : '#faad14' }} />
+                            <span style={{ fontWeight: 600 }}>{score?.toFixed(1)}%</span>
+                          </div>
+                          <div style={{ textAlign: 'right' }}>
+                            <span>Attempt #{attemptNumber}</span>
+                          </div>
+                          <div style={{}}>
+                            {lastAttempt && <span>{lastAttempt}</span>}
+                          </div>
+                          <div style={{ textAlign: 'right' }}>
+                            <Button type="link" size="small" icon={<EyeOutlined />} onClick={() => handleViewResults(quiz.id)} style={{ padding: 0, height: 'auto', fontSize: 12 }}>View</Button>
+                          </div>
+                        </div>
+                      )}
+                      {/* Action */}
+                      <Button
+                        type="primary"
+                        block
+                        style={{
+                          fontWeight: 600,
+                          fontSize: 15,
+                          borderRadius: 8,
+                          background: status === 'failed' ? '#ff4d4f' : BRAND_COLOR,
+                          borderColor: status === 'failed' ? '#ff4d4f' : BRAND_COLOR,
+                          marginTop: 6
+                        }}
+                        onClick={() => !submission ? navigate(`/student/take-quiz/${quiz.id}`) : navigate(`/student/take-quiz/${quiz.id}`)}
+                      >
+                        {submission ? 'Retake Quiz' : 'Start Quiz'}
                       </Button>
-                    </div>
-                    <div style={{ position: 'absolute', right: -30, bottom: -30, opacity: 0.07, fontSize: 120 }}>
-                      <span role="img" aria-label="quiz">📝</span>
-                    </div>
-                  </Card>
-                </Col>
-              ))}
+                    </Card>
+                  </Col>
+                );
+              })}
             </Row>
           )}
         </div>

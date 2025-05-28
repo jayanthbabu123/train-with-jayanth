@@ -92,7 +92,7 @@ export default function TrainerQuizzes() {
   }
 
   return (
-    <div style={{ maxWidth: 1200, margin: '0 auto', padding: '32px 0' }}>
+    <div style={{  margin: '0 auto', padding: '32px 0' }}>
       <PageHeader
         title="Quiz Management"
         subtitle="Create and manage quizzes for different programming languages and technologies"

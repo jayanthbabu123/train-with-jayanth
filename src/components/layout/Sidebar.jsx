@@ -4,7 +4,11 @@ export default function Sidebar() {
   return (
     <aside className="w-64 bg-background-dark border-r border-primary-800">
       <div className="p-6">
-        <h1 className="text-2xl font-secondary font-bold text-primary-100">Train with Jayanth</h1>
+        <NavLink to="/" className="no-underline">
+          <h1 className="text-2xl font-secondary font-bold text-primary-100 hover:text-primary-50 transition-colors">
+            Train with Jayanth
+          </h1>
+        </NavLink>
       </div>
       <nav className="mt-6">
         <NavLink

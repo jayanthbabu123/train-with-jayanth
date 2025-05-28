@@ -371,6 +371,20 @@ export default function Practice() {
     }
   };
 
+  const getActiveFile = (language) => {
+    switch (language) {
+      case 'html':
+      case 'css':
+        return '/index.html';
+      case 'javascript':
+        return '/index.js';
+      case 'react':
+        return '/App.js';
+      default:
+        return Object.keys(code)[0] || "/index.html";
+    }
+  };
+
   if (loading) {
   return (
       <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
@@ -566,7 +580,7 @@ export default function Practice() {
                 recompileDelay: 1000,
                 editorHeight: fullscreen ? 'calc(100vh - 60px)' : 600,
                 editorWidthPercentage: 60,
-                activeFile: Object.keys(code)[0] || "/index.html",
+                activeFile: getActiveFile(assignment.language),
                 visibleFiles: Object.keys(code) || ["/index.html", "/index.js"],
               }}
             >
