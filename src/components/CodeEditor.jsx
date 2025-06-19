@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import * as monaco from '@monaco-editor/react';
 
-export function CodeEditor({ value, onChange, language = 'javascript', height = '300px', readOnly = false }) {
+export function CodeEditor({ value, onChange, language = 'javascript', height = '300px', readOnly = false, theme = 'vs-light' }) {
   const editorRef = useRef(null);
 
   const handleEditorDidMount = (editor, monaco) => {
@@ -19,7 +19,7 @@ export function CodeEditor({ value, onChange, language = 'javascript', height = 
       <monaco.Editor
         height={height}
         defaultLanguage={language}
-        defaultValue={value}
+        value={value}
         onChange={handleChange}
         onMount={handleEditorDidMount}
         options={{
@@ -37,9 +37,10 @@ export function CodeEditor({ value, onChange, language = 'javascript', height = 
           },
           readOnly: readOnly,
           automaticLayout: true,
-          theme: 'vs-light',
+          theme: theme,
           padding: { top: 10, bottom: 10 },
         }}
+        theme={theme}
       />
     </div>
   );

@@ -32,6 +32,7 @@ import {
   FullscreenOutlined,
   FullscreenExitOutlined
 } from '@ant-design/icons';
+import { CodeEditor } from '../../components/CodeEditor';
 
 const { Title, Text } = Typography;
 const BRAND_COLOR = '#0067b8';
@@ -408,6 +409,17 @@ export default function TakeQuiz() {
             <Title level={4} style={{ margin: 0, color: '#1a1a1a' }}>
               {quiz.questions[currentQuestion].question}
             </Title>
+            {quiz.questions[currentQuestion].questionCode && (
+              <div style={{ margin: '16px 0' }}>
+                <CodeEditor
+                  value={quiz.questions[currentQuestion].questionCode}
+                  language={quiz.questions[currentQuestion].questionLanguage || 'javascript'}
+                  readOnly
+                  height="180px"
+                  theme="vs-dark"
+                />
+              </div>
+            )}
             <Radio.Group
               value={answers[currentQuestion]}
               onChange={e => handleAnswerSelect(currentQuestion, e.target.value)}

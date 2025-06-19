@@ -1,62 +1,126 @@
 {
-    "title": "JavaScript Basics Quiz",
-    "level": "Beginner",
-    "questions": [
-      {
-        "question": "Which keyword is used to declare a variable in JavaScript?",
-        "options": ["define", "var", "const", "let"],
-        "answer": 1
-      },
-      {
-        "question": "What is the output of 'typeof null'?",
-        "options": ["'null'", "'object'", "'undefined'", "'boolean'"],
-        "answer": 1
-      },
-      {
-        "question": "Which method is used to convert JSON to a JavaScript object?",
-        "options": ["JSON.convert()", "JSON.parse()", "JSON.stringify()", "JSON.objectify()"],
-        "answer": 1
-      },
-      {
-        "question": "What does '===' do in JavaScript?",
-        "options": [
-          "Checks equality of value only",
-          "Assigns a value to a variable",
-          "Checks equality of value and type",
-          "Compares strings only"
-        ],
-        "answer": 2
-      },
-      {
-        "question": "Which of the following is a primitive data type in JavaScript?",
-        "options": ["String", "Array", "Object", "Function"],
-        "answer": 0
-      },
-      {
-        "question": "What will `console.log(2 + '2')` output?",
-        "options": ["4", "'22'", "NaN", "Error"],
-        "answer": 1
-      },
-      {
-        "question": "How do you write a comment in JavaScript?",
-        "options": ["<!-- comment -->", "# comment", "// comment", "/* comment"],
-        "answer": 2
-      },
-      {
-        "question": "Which of these is NOT a JavaScript loop?",
-        "options": ["for", "foreach", "while", "do...while"],
-        "answer": 1
-      },
-      {
-        "question": "What is the result of `Boolean('')`?",
-        "options": ["true", "false", "undefined", "null"],
-        "answer": 1
-      },
-      {
-        "question": "Which method adds an element to the end of an array?",
-        "options": ["push()", "pop()", "shift()", "unshift()"],
-        "answer": 0
-      }
-    ]
-  }
-  
+  "title": "Beginner JavaScript Quiz",
+  "level": "Beginner",
+  "questions": [
+    {
+      "question": "What will be the result of this function?",
+      "questionCode": "function greet(name) {\n  return 'Hello ' + name;\n}\nconsole.log(greet('Alice'));",
+      "questionLanguage": "javascript",
+      "options": [
+        "Hello Alice",
+        "Hello",
+        "Alice Hello",
+        "Hi Alice"
+      ],
+      "answer": 0
+    },
+    {
+      "question": "What is the result of this expression?",
+      "questionCode": "console.log(3 * '2');",
+      "questionLanguage": "javascript",
+      "options": [
+        "NaN",
+        "'6'",
+        "6",
+        "undefined"
+      ],
+      "answer": 2
+    },
+    {
+      "question": "What does this code output?",
+      "questionCode": "let x = 5;\nlet y = '5';\nconsole.log(x == y);",
+      "questionLanguage": "javascript",
+      "options": [
+        "false",
+        "undefined",
+        "null",
+        "true"
+      ],
+      "answer": 3
+    },
+    {
+      "question": "What will be printed by this code?",
+      "questionCode": "console.log(typeof []);",
+      "questionLanguage": "javascript",
+      "options": [
+        "list",
+        "undefined",
+        "array",
+        "object"
+      ],
+      "answer": 3
+    },
+    {
+      "question": "What does the following function return?",
+      "questionCode": "function isEven(n) {\n  return n % 2 === 0;\n}\nconsole.log(isEven(4));",
+      "questionLanguage": "javascript",
+      "options": [
+        "false",
+        "true",
+        "null",
+        "undefined"
+      ],
+      "answer": 1
+    },
+    {
+      "question": "Which of the following will output 'undefined'?",
+      "questionCode": "let arr = [1, 2, 3];\nconsole.log(arr[3]);",
+      "questionLanguage": "javascript",
+      "options": [
+        "Reversing the array",
+        "Pushing a value",
+        "Accessing an index out of range",
+        "Accessing a valid index"
+      ],
+      "answer": 2
+    },
+    {
+      "question": "What will be the result of this function call?",
+      "questionCode": "function multiply(a, b = 2) {\n  return a * b;\n}\nconsole.log(multiply(3));",
+      "questionLanguage": "javascript",
+      "options": [
+        "undefined",
+        "5",
+        "6",
+        "3"
+      ],
+      "answer": 2
+    },
+    {
+      "question": "What is the output of this logical operation?",
+      "questionCode": "console.log(true && false);",
+      "questionLanguage": "javascript",
+      "options": [
+        "undefined",
+        "false",
+        "null",
+        "true"
+      ],
+      "answer": 1
+    },
+    {
+      "question": "Which statement correctly checks if 'a' is not equal to 'b'?",
+      "questionCode": "let a = 5, b = '5';",
+      "questionLanguage": "javascript",
+      "options": [
+        "a == b",
+        "a =! b",
+        "a !== b",
+        "a != b"
+      ],
+      "answer": 2
+    },
+    {
+      "question": "What will this function log to the console?",
+      "questionCode": "function sayHi() {\n  console.log('Hi!');\n}\nsayHi();",
+      "questionLanguage": "javascript",
+      "options": [
+        "sayHi",
+        "Hi!",
+        "null",
+        "undefined"
+      ],
+      "answer": 1
+    }
+  ]
+}

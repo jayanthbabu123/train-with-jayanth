@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Card, Typography, Row, Col, Button, Empty, Spin, Modal, Tabs, Space, Upload, Divider, Input, Radio, Badge, Tag, Tooltip } from 'antd';
+import { Card, Typography, Row, Col, Button, Empty, Spin, Modal, Tabs, Space, Upload, Divider, Input, Radio, Badge, Tag, Tooltip, Select } from 'antd';
 import { PlusOutlined, UploadOutlined, DeleteOutlined, EditOutlined, EyeOutlined } from '@ant-design/icons';
 import { collection, query, where, getDocs, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { LANGUAGES } from './Quizzes';
 import { getAuth } from 'firebase/auth';
 import { message } from 'antd';
+import {CodeEditor} from '../../components/CodeEditor';
 
 const { Title, Text } = Typography;
+const { Option } = Select;
 
 export default function QuizzesByLanguage() {
   const { language } = useParams();
@@ -21,7 +23,13 @@ export default function QuizzesByLanguage() {
   const [quizTitle, setQuizTitle] = useState('');
   const [quizLevel, setQuizLevel] = useState('');
   const [quizQuestions, setQuizQuestions] = useState([
-    { question: '', options: ['', '', '', ''], answer: 0 }
+    { 
+      question: '', 
+      questionCode: '',
+      questionLanguage: 'javascript',
+      options: ['', '', '', ''], 
+      answer: 0 
+    }
   ]);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [quizToDelete, setQuizToDelete] = useState(null);
@@ -29,6 +37,7 @@ export default function QuizzesByLanguage() {
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [quizToEdit, setQuizToEdit] = useState(null);
   const [quizToView, setQuizToView] = useState(null);
+  const [editorKey, setEditorKey] = useState(0);
 
   const lang = LANGUAGES.find(l => l.key === language);
   const topics = lang?.topics || [];
@@ -62,7 +71,13 @@ export default function QuizzesByLanguage() {
       setCreateTab('manual');
       setQuizTitle('');
       setQuizLevel('');
-      setQuizQuestions([{ question: '', options: ['', '', '', ''], answer: 0 }]);
+      setQuizQuestions([{ 
+        question: '', 
+        questionCode: '',
+        questionLanguage: 'javascript',
+        options: ['', '', '', ''], 
+        answer: 0 
+      }]);
     }
   }, [createModalOpen]);
 
@@ -73,19 +88,32 @@ export default function QuizzesByLanguage() {
         const data = JSON.parse(e.target.result);
         setQuizTitle(data.title || '');
         setQuizLevel(data.level || '');
-        setQuizQuestions(
-          Array.isArray(data.questions) && data.questions.length > 0
-            ? data.questions.map(q => ({
-                question: q.question || '',
-                options: q.options || ['', '', '', ''],
-                answer: typeof q.answer === 'number' ? q.answer : 0
-              }))
-            : [{ question: '', options: ['', '', '', ''], answer: 0 }]
-        );
+        const transformedQuestions = (data.questions || []).map(q => {
+          const options = (q.options || []).map(opt =>
+            typeof opt === 'string' ? opt : (opt.text || '')
+          );
+          while (options.length < 4) options.push('');
+          return {
+            question: q.question || '',
+            questionCode: q.questionCode || '',
+            questionLanguage: q.questionLanguage || 'javascript',
+            options,
+            answer: typeof q.answer === 'number' ? q.answer : 0
+          };
+        });
+        setQuizQuestions(transformedQuestions.length ? transformedQuestions : [{
+          question: '',
+          questionCode: '',
+          questionLanguage: 'javascript',
+          options: ['', '', '', ''],
+          answer: 0
+        }]);
         setCreateTab('manual');
-        message.success('Quiz loaded from JSON!');
+        setEditorKey(prev => prev + 1);
+        message.success('Quiz loaded from JSON successfully!');
       } catch (err) {
-        message.error('Invalid JSON file');
+        console.error('JSON parsing error:', err);
+        message.error('Invalid JSON file format');
       }
     };
     reader.readAsText(file);
@@ -338,16 +366,48 @@ export default function QuizzesByLanguage() {
                         <Button type="text" icon={<DeleteOutlined />} danger onClick={() => setQuizQuestions(quizQuestions.filter((_, i) => i !== idx))} />
                       )}
                     >
-                      <Input
-                        style={{ width: '100%', marginBottom: 8 }}
-                        value={q.question}
-                        onChange={e => {
-                          const arr = [...quizQuestions];
-                          arr[idx].question = e.target.value;
-                          setQuizQuestions(arr);
-                        }}
-                        placeholder="Enter question"
-                      />
+                      <div style={{ marginBottom: 16 }}>
+                        <Text strong>Question Text</Text>
+                        <Input
+                          style={{ width: '100%', marginTop: 4, marginBottom: 8 }}
+                          value={q.question}
+                          onChange={e => {
+                            const arr = [...quizQuestions];
+                            arr[idx].question = e.target.value;
+                            setQuizQuestions(arr);
+                          }}
+                          placeholder="Enter question"
+                        />
+                        <Text strong>Question Code (optional)</Text>
+                        <div style={{ marginTop: 4, marginBottom: 8 }}>
+                          <CodeEditor
+                            key={editorKey + '-' + idx}
+                            value={q.questionCode}
+                            onChange={value => {
+                              const arr = [...quizQuestions];
+                              arr[idx].questionCode = value;
+                              setQuizQuestions(arr);
+                            }}
+                            language={q.questionLanguage}
+                            height="150px"
+                            theme="vs-dark"
+                          />
+                        </div>
+                        <Select
+                          style={{ width: 200, marginBottom: 8 }}
+                          value={q.questionLanguage}
+                          onChange={value => {
+                            const arr = [...quizQuestions];
+                            arr[idx].questionLanguage = value;
+                            setQuizQuestions(arr);
+                          }}
+                        >
+                          <Option value="javascript">JavaScript</Option>
+                          <Option value="python">Python</Option>
+                          <Option value="java">Java</Option>
+                          <Option value="cpp">C++</Option>
+                        </Select>
+                      </div>
                       <div style={{ marginBottom: 8 }}>
                         <Radio.Group
                           value={q.answer}
@@ -359,18 +419,20 @@ export default function QuizzesByLanguage() {
                           style={{ width: '100%' }}
                         >
                           {q.options.map((opt, oidx) => (
-                            <div key={oidx} style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
-                              <Radio value={oidx} style={{ marginRight: 8 }} />
-                              <Input
-                                style={{ width: '90%' }}
-                                value={opt}
-                                onChange={e => {
-                                  const arr = [...quizQuestions];
-                                  arr[idx].options[oidx] = e.target.value;
-                                  setQuizQuestions(arr);
-                                }}
-                                placeholder={`Option ${oidx + 1}`}
-                              />
+                            <div key={oidx} style={{ marginBottom: 16, padding: 12, background: '#fff', borderRadius: 8 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+                                <Radio value={oidx} style={{ marginRight: 8 }} />
+                                <Input
+                                  style={{ flex: 1 }}
+                                  value={opt}
+                                  onChange={e => {
+                                    const arr = [...quizQuestions];
+                                    arr[idx].options[oidx] = e.target.value;
+                                    setQuizQuestions(arr);
+                                  }}
+                                  placeholder={`Option ${oidx + 1} text`}
+                                />
+                              </div>
                             </div>
                           ))}
                         </Radio.Group>
@@ -393,7 +455,13 @@ export default function QuizzesByLanguage() {
                   <Button
                     type="dashed"
                     icon={<PlusOutlined />}
-                    onClick={() => setQuizQuestions([...quizQuestions, { question: '', options: ['', '', '', ''], answer: 0 }])}
+                    onClick={() => setQuizQuestions([...quizQuestions, { 
+                      question: '', 
+                      questionCode: '',
+                      questionLanguage: 'javascript',
+                      options: ['', '', '', ''], 
+                      answer: 0 
+                    }])}
                     style={{ width: '100%', marginTop: 8 }}
                   >
                     Add Question
@@ -428,19 +496,32 @@ export default function QuizzesByLanguage() {
                 <div style={{ marginTop: 24, color: '#888' }}>
                   <Text type="secondary">
                     Upload a JSON file with the following structure:<br />
-                    <pre style={{ textAlign: 'left', background: '#f8fafd', padding: 12, borderRadius: 8, marginTop: 8 }}>
+                    <pre style={{ textAlign: 'left', background: '#1e1e1e', color: '#fff', padding: 12, borderRadius: 8, marginTop: 8 }}>
 {`{
   "title": "Quiz Title",
   "level": "Beginner",
   "questions": [
     {
-      "question": "What is ...?",
-      "options": ["A", "B", "C", "D"],
-      "answer": 1
+      "question": "What will be the result of this function?",
+      "questionCode": "function greet(name) {\n  return 'Hello ' + name;\n}\nconsole.log(greet('Alice'));",
+      "questionLanguage": "javascript",
+      "options": [
+        "Hello Alice",
+        "Hello",
+        "Alice Hello",
+        "Hi Alice"
+      ],
+      "answer": 0
     }
   ]
 }`}
                     </pre>
+                    <div style={{ marginTop: 8, color: '#ff7875' }}>
+                      <b>Note:</b> <br />
+                      - <b>Only</b> <code>questionCode</code> is supported for code snippets (not in options).<br />
+                      - <code>options</code> must be an array of strings.<br />
+                      - <code>answer</code> is the index (0-based) of the correct option.
+                    </div>
                   </Text>
                 </div>
               </div>
@@ -507,16 +588,48 @@ export default function QuizzesByLanguage() {
                   <Button type="text" icon={<DeleteOutlined />} danger onClick={() => setQuizQuestions(quizQuestions.filter((_, i) => i !== idx))} />
                 )}
               >
-                <Input
-                  style={{ width: '100%', marginBottom: 8 }}
-                  value={q.question}
-                  onChange={e => {
-                    const arr = [...quizQuestions];
-                    arr[idx].question = e.target.value;
-                    setQuizQuestions(arr);
-                  }}
-                  placeholder="Enter question"
-                />
+                <div style={{ marginBottom: 16 }}>
+                  <Text strong>Question Text</Text>
+                  <Input
+                    style={{ width: '100%', marginTop: 4, marginBottom: 8 }}
+                    value={q.question}
+                    onChange={e => {
+                      const arr = [...quizQuestions];
+                      arr[idx].question = e.target.value;
+                      setQuizQuestions(arr);
+                    }}
+                    placeholder="Enter question"
+                  />
+                  <Text strong>Question Code (optional)</Text>
+                  <div style={{ marginTop: 4, marginBottom: 8 }}>
+                    <CodeEditor
+                      key={editorKey + '-' + idx}
+                      value={q.questionCode}
+                      onChange={value => {
+                        const arr = [...quizQuestions];
+                        arr[idx].questionCode = value;
+                        setQuizQuestions(arr);
+                      }}
+                      language={q.questionLanguage}
+                      height="150px"
+                      theme="vs-dark"
+                    />
+                  </div>
+                  <Select
+                    style={{ width: 200, marginBottom: 8 }}
+                    value={q.questionLanguage}
+                    onChange={value => {
+                      const arr = [...quizQuestions];
+                      arr[idx].questionLanguage = value;
+                      setQuizQuestions(arr);
+                    }}
+                  >
+                    <Option value="javascript">JavaScript</Option>
+                    <Option value="python">Python</Option>
+                    <Option value="java">Java</Option>
+                    <Option value="cpp">C++</Option>
+                  </Select>
+                </div>
                 <div style={{ marginBottom: 8 }}>
                   <Radio.Group
                     value={q.answer}
@@ -528,18 +641,20 @@ export default function QuizzesByLanguage() {
                     style={{ width: '100%' }}
                   >
                     {q.options.map((opt, oidx) => (
-                      <div key={oidx} style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
-                        <Radio value={oidx} style={{ marginRight: 8 }} />
-                        <Input
-                          style={{ width: '90%' }}
-                          value={opt}
-                          onChange={e => {
-                            const arr = [...quizQuestions];
-                            arr[idx].options[oidx] = e.target.value;
-                            setQuizQuestions(arr);
-                          }}
-                          placeholder={`Option ${oidx + 1}`}
-                        />
+                      <div key={oidx} style={{ marginBottom: 16, padding: 12, background: '#fff', borderRadius: 8 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+                          <Radio value={oidx} style={{ marginRight: 8 }} />
+                          <Input
+                            style={{ flex: 1 }}
+                            value={opt}
+                            onChange={e => {
+                              const arr = [...quizQuestions];
+                              arr[idx].options[oidx] = e.target.value;
+                              setQuizQuestions(arr);
+                            }}
+                            placeholder={`Option ${oidx + 1} text`}
+                          />
+                        </div>
                       </div>
                     ))}
                   </Radio.Group>
@@ -562,7 +677,13 @@ export default function QuizzesByLanguage() {
             <Button
               type="dashed"
               icon={<PlusOutlined />}
-              onClick={() => setQuizQuestions([...quizQuestions, { question: '', options: ['', '', '', ''], answer: 0 }])}
+              onClick={() => setQuizQuestions([...quizQuestions, { 
+                question: '', 
+                questionCode: '',
+                questionLanguage: 'javascript',
+                options: ['', '', '', ''], 
+                answer: 0 
+              }])}
               style={{ width: '100%', marginTop: 8 }}
             >
               Add Question
@@ -579,31 +700,65 @@ export default function QuizzesByLanguage() {
         footer={[
           <Button key="close" onClick={() => setViewModalOpen(false)}>Close</Button>
         ]}
+        width={800}
       >
         <div>
-          <div style={{ marginBottom: 16 }}>
-            <Text strong>Quiz Title</Text>
-            <div style={{ marginTop: 4, marginBottom: 12 }}>{quizToView?.title}</div>
-            <Text strong>Level</Text>
-            <div style={{ marginTop: 4, marginBottom: 12 }}>{quizToView?.level}</div>
-            <Text strong>Topic</Text>
-            <div style={{ marginTop: 4, marginBottom: 12 }}>{quizToView?.topic}</div>
+          <div style={{ marginBottom: 24 }}>
+            <Text strong style={{ fontSize: 16 }}>Quiz Title</Text>
+            <div style={{ marginTop: 4, marginBottom: 16, fontSize: 18 }}>{quizToView?.title}</div>
+            <Text strong style={{ fontSize: 16 }}>Level</Text>
+            <div style={{ marginTop: 4, marginBottom: 16 }}>{quizToView?.level}</div>
+            <Text strong style={{ fontSize: 16 }}>Topic</Text>
+            <div style={{ marginTop: 4, marginBottom: 16 }}>{quizToView?.topic}</div>
           </div>
           <div>
-            <Text strong>Questions</Text>
+            <Text strong style={{ fontSize: 16, marginBottom: 16, display: 'block' }}>Questions</Text>
             {quizToView?.questions?.map((q, idx) => (
               <Card
                 key={idx}
-                style={{ marginBottom: 16, borderRadius: 12, background: '#f8fafd' }}
+                style={{ marginBottom: 24, borderRadius: 12, background: '#f8fafd' }}
                 size="small"
-                title={`Q${idx + 1}`}
+                title={`Question ${idx + 1}`}
               >
-                <div style={{ marginBottom: 8 }}>{q.question}</div>
-                <div style={{ marginBottom: 8 }}>
+                <div style={{ marginBottom: 16 }}>
+                  <Text strong style={{ display: 'block', marginBottom: 8 }}>Question:</Text>
+                  <div style={{ marginBottom: 12 }}>{q.question}</div>
+                  {q.questionCode && q.questionCode.trim() && (
+                    <div style={{ marginBottom: 16 }}>
+                      <Text strong style={{ display: 'block', marginBottom: 8 }}>Code:</Text>
+                      <div style={{ 
+                        background: '#1e1e1e', 
+                        padding: 16, 
+                        borderRadius: 8,
+                        fontFamily: 'monospace',
+                        color: '#fff',
+                        whiteSpace: 'pre-wrap',
+                        fontSize: 15
+                      }}>
+                        {q.questionCode}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <Text strong style={{ display: 'block', marginBottom: 12 }}>Options:</Text>
                   {q.options.map((opt, oidx) => (
-                    <div key={oidx} style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
-                      <Radio checked={oidx === q.answer} disabled style={{ marginRight: 8 }} />
-                      <div>{opt}</div>
+                    <div 
+                      key={oidx} 
+                      style={{ 
+                        marginBottom: 16,
+                        padding: 12,
+                        background: oidx === q.answer ? '#e6f7ff' : '#fff',
+                        border: oidx === q.answer ? '1px solid #91d5ff' : '1px solid #f0f0f0',
+                        borderRadius: 8
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                        <Radio checked={oidx === q.answer} disabled style={{ marginTop: 4 }} />
+                        <div style={{ flex: 1 }}>
+                          <div>{opt}</div>
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>

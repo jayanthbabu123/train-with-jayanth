@@ -35,19 +35,17 @@ export default function StudentVideos() {
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedDuration, setSelectedDuration] = useState('all');
+  const [selectedBatch, setSelectedBatch] = useState('all');
   const [selectedVideo, setSelectedVideo] = useState(null);
   const { currentUser } = useAuth();
 
-  // Get unique categories from videos
+  // Get unique categories and batches from videos
   const [categories, setCategories] = useState([]);
+  const [batches, setBatches] = useState([]);
 
-  // Duration options
-  const durationOptions = [
-    { label: 'All Durations', value: 'all' },
-    { label: 'Under 10 min', value: 'short' },
-    { label: '10-30 min', value: 'medium' },
-    { label: 'Over 30 min', value: 'long' }
+  // Batch options
+  const batchOptions = [
+    { label: 'All Batches', value: 'all' },
   ];
 
   useEffect(() => {
@@ -73,9 +71,11 @@ export default function StudentVideos() {
         return a.uploadDate.toDate() - b.uploadDate.toDate();
       });
 
-      // Extract unique categories
+      // Extract unique categories and batches
       const uniqueCategories = [...new Set(sortedVideos.map(video => video.category))].filter(Boolean);
+      const uniqueBatches = [...new Set(sortedVideos.map(video => video.batchId))].filter(Boolean);
       setCategories(uniqueCategories);
+      setBatches(uniqueBatches);
       
       console.log('Fetched videos:', sortedVideos);
       setVideos(sortedVideos);
@@ -91,9 +91,9 @@ export default function StudentVideos() {
     const matchesSearch = video.title.toLowerCase().includes(searchText.toLowerCase()) ||
                          video.description.toLowerCase().includes(searchText.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || video.category === selectedCategory;
-    const matchesDuration = selectedDuration === 'all' || video.duration === selectedDuration;
+    const matchesBatch = selectedBatch === 'all' || video.batchId === selectedBatch;
     
-    return matchesSearch && matchesCategory && matchesDuration;
+    return matchesSearch && matchesCategory && matchesBatch;
   });
 
   const formatDuration = (minutes) => {
@@ -167,14 +167,15 @@ export default function StudentVideos() {
           </Col>
           <Col xs={24} md={8}>
             <Select
-              placeholder="Filter by duration"
+              placeholder="Filter by batch"
               style={{ width: '100%' }}
-              value={selectedDuration}
-              onChange={setSelectedDuration}
+              value={selectedBatch}
+              onChange={setSelectedBatch}
               size="large"
             >
-              {durationOptions.map(option => (
-                <Option key={option.value} value={option.value}>{option.label}</Option>
+              <Option value="all">All Batches</Option>
+              {batches.map(batch => (
+                <Option key={batch} value={batch}>{batch}</Option>
               ))}
             </Select>
           </Col>
@@ -259,7 +260,7 @@ export default function StudentVideos() {
                 onClick={() => {
                   setSearchText('');
                   setSelectedCategory('all');
-                  setSelectedDuration('all');
+                  setSelectedBatch('all');
                 }}
               >
                 Clear Filters
