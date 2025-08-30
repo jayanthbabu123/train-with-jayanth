@@ -24,14 +24,14 @@ import TrainerBatches from "./pages/trainer/Batches";
 import TrainerMaterials from "./pages/trainer/Materials";
 import TrainerAssignments from "./pages/trainer/Assignments";
 import TrainerVideoUpload from "./pages/trainer/TrainerVideoUpload";
-import Submissions from './pages/trainer/Submissions';
-import ReviewSubmission from './pages/trainer/ReviewSubmission';
-import Courses from './pages/trainer/Courses';
-import CourseDetails from './pages/trainer/CourseDetails';
-import TrainerEnrollments from './pages/trainer/Enrollments';
-import TrainerFeed from './pages/trainer/TrainerFeed';
-import TrainerQuizzes from './pages/trainer/Quizzes';
-import QuizzesByLanguage from './pages/trainer/QuizzesByLanguage';
+import Submissions from "./pages/trainer/Submissions";
+import ReviewSubmission from "./pages/trainer/ReviewSubmission";
+import Courses from "./pages/trainer/Courses";
+import CourseDetails from "./pages/trainer/CourseDetails";
+import TrainerEnrollments from "./pages/trainer/Enrollments";
+import TrainerFeed from "./pages/trainer/TrainerFeed";
+import TrainerQuizzes from "./pages/trainer/Quizzes";
+import QuizzesByLanguage from "./pages/trainer/QuizzesByLanguage";
 
 // Student Pages
 import StudentDashboard from "./pages/student/Dashboard";
@@ -39,6 +39,7 @@ import StudentCourses from "./pages/student/Courses";
 import StudentAssignments from "./pages/student/Assignments";
 import StudentProfile from "./pages/student/Profile";
 import Home from "./pages/Home/Home";
+import { Syllabus } from "./pages/Syllabus/Syllabus";
 import Practice from "./pages/student/Practice";
 import StudentBatches from "./pages/student/Batches";
 import StudentVideos from "./pages/student/Videos";
@@ -46,8 +47,8 @@ import StudentCourseDetails from "./pages/student/CourseDetails";
 import StudentQuizzes from "./pages/student/Quizzes";
 import StudentQuizzesByLanguage from "./pages/student/QuizzesByLanguage";
 import ReviewAssignment from "./pages/student/ReviewAssignment";
-import TakeQuiz from './pages/student/TakeQuiz';
-import QuizResults from './pages/student/QuizResults';
+import TakeQuiz from "./pages/student/TakeQuiz";
+import QuizResults from "./pages/student/QuizResults";
 
 // Protected Route component
 function ProtectedRoute({ children, allowedRoles }) {
@@ -70,6 +71,7 @@ function AppRoutes() {
       {/* Public Routes */}
       <Route path="/" element={<Login />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/syllabus" element={<Syllabus />} />
       <Route path="/unauthorized" element={<Unauthorized />} />
 
       {/* Trainer Routes */}
@@ -92,7 +94,10 @@ function AppRoutes() {
                 <Route path="enrollments" element={<TrainerEnrollments />} />
                 <Route path="feed" element={<TrainerFeed />} />
                 <Route path="quizzes" element={<TrainerQuizzes />} />
-                <Route path="quizzes/:language" element={<QuizzesByLanguage />} />
+                <Route
+                  path="quizzes/:language"
+                  element={<QuizzesByLanguage />}
+                />
               </Routes>
             </DashboardLayout>
           </ProtectedRoute>
@@ -113,7 +118,10 @@ function AppRoutes() {
                 <Route path="practice/:id" element={<Practice />} />
                 <Route path="review/:id" element={<ReviewAssignment />} />
                 <Route path="quizzes" element={<StudentQuizzes />} />
-                <Route path="quizzes/:language" element={<StudentQuizzesByLanguage />} />
+                <Route
+                  path="quizzes/:language"
+                  element={<StudentQuizzesByLanguage />}
+                />
                 <Route path="take-quiz/:id" element={<TakeQuiz />} />
                 <Route path="quiz-results/:id" element={<QuizResults />} />
                 <Route path="profile" element={<StudentProfile />} />

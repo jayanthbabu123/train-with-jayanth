@@ -1,143 +1,168 @@
-@import 'antd/dist/reset.css'; 
-@import 'bootstrap/dist/css/bootstrap.min.css';
+@import "antd/dist/reset.css";
+@import "bootstrap/dist/css/bootstrap.min.css";
+
+/* CSS Variables for consistent branding */
+:root {
+    --color-brand-blue: #3b82f6;
+    --color-brand-dark: #1e3a8a;
+    --color-brand-green: #10b981;
+    --color-brand-light: #e0e7ff;
+    --color-text-primary: #1e293b;
+    --color-text-secondary: #64748b;
+    --color-background-light: #f8fafc;
+    --color-background-white: #ffffff;
+}
 
 /* Base styles to ensure proper display across all devices */
-html, body {
-  width: 100%;
-  min-width: 100%;
-  max-width: 100%;
-  overflow-x: hidden;
-  margin: 0;
-  padding: 0;
+html,
+body {
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    margin: 0;
+    padding: 0;
 }
 
 #root {
-  width: 100%;
-  max-width: 100vw;
-  overflow-x: hidden;
-  padding-left: 0 !important;
-  margin-left: 0 !important;
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+    padding-left: 0 !important;
+    margin-left: 0 !important;
 }
 
 /* Dashboard styles */
 .dashboard-tabs .ant-tabs-nav {
-  margin-bottom: 24px;
+    margin-bottom: 24px;
 }
 
 .dashboard-tabs .ant-tabs-tab {
-  padding: 10px 20px;
-  transition: all 0.3s;
-  border-radius: 8px;
-  margin-right: 8px;
-  font-weight: 500;
-  border: none !important;
+    padding: 10px 20px;
+    transition: all 0.3s;
+    border-radius: 8px;
+    margin-right: 8px;
+    font-weight: 500;
+    border: none !important;
 }
 
 .dashboard-tabs .ant-tabs-tab-active {
-  background-color: #f0f7ff;
-  border-radius: 8px;
-  font-weight: 600;
+    background-color: #f0f7ff;
+    border-radius: 8px;
+    font-weight: 600;
 }
 
 .dashboard-tabs .ant-tabs-tab:hover {
-  background-color: #f5f5f5;
+    background-color: #f5f5f5;
 }
 
 .dashboard-tabs .ant-tabs-ink-bar {
-  background-color: #0067b8;
-  height: 3px;
-  border-radius: 3px;
+    background-color: #0067b8;
+    height: 3px;
+    border-radius: 3px;
 }
 
 /* Tag enhancements */
 .ant-tag {
-  border-radius: 16px;
-  padding: 2px 10px;
-  font-size: 12px;
-  font-weight: 500;
-  border: none;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    border-radius: 16px;
+    padding: 2px 10px;
+    font-size: 12px;
+    font-weight: 500;
+    border: none;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 .ant-tag-blue {
-  background-color: #e6f7ff;
-  color: #1890ff;
+    background-color: #e6f7ff;
+    color: #1890ff;
 }
 
-.ant-tag-green, .ant-tag-success {
-  background-color: #f6ffed;
-  color: #52c41a;
+.ant-tag-green,
+.ant-tag-success {
+    background-color: #f6ffed;
+    color: #52c41a;
 }
 
-.ant-tag-gold, .ant-tag-warning {
-  background-color: #fffbe6;
-  color: #faad14;
+.ant-tag-gold,
+.ant-tag-warning {
+    background-color: #fffbe6;
+    color: #faad14;
 }
 
-.ant-tag-red, .ant-tag-error {
-  background-color: #fff1f0;
-  color: #f5222d;
+.ant-tag-red,
+.ant-tag-error {
+    background-color: #fff1f0;
+    color: #f5222d;
 }
 
 .ant-tag-purple {
-  background-color: #f9f0ff;
-  color: #722ed1;
+    background-color: #f9f0ff;
+    color: #722ed1;
 }
 .ant-card {
-  transition: all 0.3s ease;
-  border-radius: 12px !important;
+    transition: all 0.3s ease;
+    border-radius: 12px !important;
 }
 
 .ant-card {
-  box-shadow: 0 0px 1px rgba(0, 103, 184, 0.15) !important;
-  /* transform: translateY(-3px); */
+    box-shadow: 0 0px 1px rgba(0, 103, 184, 0.15) !important;
+    /* transform: translateY(-3px); */
 }
 
 /* Statistic styles */
 .ant-statistic-title {
-  color: rgba(0, 0, 0, 0.65);
-  font-weight: 500;
+    color: rgba(0, 0, 0, 0.65);
+    font-weight: 500;
 }
 
 .ant-statistic-content {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  font-weight: 700;
-  letter-spacing: -0.5px;
+    font-family:
+        "Inter",
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        "Helvetica Neue",
+        Arial,
+        sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.5px;
 }
 
 .ant-statistic-content-value {
-  display: flex;
-  align-items: baseline;
+    display: flex;
+    align-items: baseline;
 }
 
 /* Avatar improvements */
 .ant-avatar {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  border: 2px solid #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border: 2px solid #fff;
 }
 
 /* Table enhancements */
 .ant-table-thead > tr > th {
-  background-color: #f0f7ff;
-  font-weight: 600;
-  padding: 16px;
-  border-bottom: 2px solid #e6f4ff;
+    background-color: #f0f7ff;
+    font-weight: 600;
+    padding: 16px;
+    border-bottom: 2px solid #e6f4ff;
 }
 
 .ant-table-tbody > tr > td {
-  padding: 12px 16px;
+    padding: 12px 16px;
 }
 
 .ant-table-row:hover .ant-table-cell {
-  background-color: #f0f7ff !important;
+    background-color: #f0f7ff !important;
 }
 
 /* Ensure content expands fully */
-.ant-layout, .ant-layout-content {
-  max-width: 100%;
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 auto;
+.ant-layout,
+.ant-layout-content {
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
 }
 
 /* Make sure children of content area expand properly */
@@ -146,418 +171,426 @@ html, body {
   max-width: 100%;
 } */
 
-.sp-cm, .cm-scroller {
-  overflow: auto !important;
-  min-height: 0 !important;
-  max-height: 100% !important;
-  height: 100% !important;
+.sp-cm,
+.cm-scroller {
+    overflow: auto !important;
+    min-height: 0 !important;
+    max-height: 100% !important;
+    height: 100% !important;
 }
 
 /* Fix mobile responsiveness issues */
 @media (max-width: 768px) {
-  .ant-layout {
-    padding: 0 !important;
-    margin: 0 !important;
-  }
-  
-  .ant-layout-content {
-    padding: 12px !important;
-    margin: 0 !important;
-    -webkit-overflow-scrolling: touch !important;
-    height: auto !important;
-    min-height: calc(100vh - 70px) !important;
-  }
-  
-  .ant-card {
-    border-radius: 8px !important;
-    margin: 0 !important;
-    padding: 12px !important;
-  }
-  
-  .ant-table-wrapper {
-    width: 100% !important;
-    overflow-x: auto !important;
-  }
-  
-  .ant-table {
-    width: 100% !important;
-  }
-  
-  body {
-    overflow-x: hidden !important;
-  }
-  
-  /* Page header responsive styles */
-  .ant-breadcrumb {
-    text-align: center !important;
-    margin-bottom: 8px !important;
-    white-space: normal !important;
-    word-wrap: break-word !important;
-  }
-  
-  .ant-typography {
-    text-align: center !important;
-  }
-  
-  .ant-card-head {
-    padding: 0 12px !important;
-  }
-  
-  .ant-card-head-title {
-    padding: 12px 0 !important;
-    font-size: 1.2rem !important;
-  }
-  
-  .ant-card-body {
-    padding: 16px 12px !important;
-  }
-  
-  /* Make buttons in headers more compact */
-  .ant-btn {
-    padding: 0 8px !important;
-    height: 32px !important;
-    font-size: 14px !important;
-  }
-  
-  /* Fix header row alignment on small screens */
-  .ant-row {
-    flex-wrap: wrap !important;
-  }
-  
-  /* Ensure page header content is properly centered */
-  .ant-page-header-heading-title,
-  .ant-page-header-heading-sub-title {
-    text-align: center !important;
-    width: 100% !important;
-  }
-  
-  /* Improve spacing in the header */
-  h1, h2, h3, h4, h5 {
-    word-break: break-word !important;
-    overflow-wrap: break-word !important;
-  }
-  
-  /* Make breadcrumb nav responsive */
-  .ant-breadcrumb > span {
-    display: inline-block !important;
-    max-width: 120px !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-  }
-  
-  /* Fix header button containers to be centered */
-  .ant-space {
-    justify-content: center !important;
-    margin-top: 12px !important;
-  }
-}
-  
-/* Fix for left space in mobile */
-@media (max-width: 768px) {
-#root, 
-.ant-layout,
-.ant-layout-has-sider {
-  width: 100% !important;
-  max-width: 100% !important;
-  min-width: 100% !important;
-  margin-left: 0 !important;
-  padding-left: 0 !important;
-  left: 0 !important;
-  overflow-x: hidden !important;
+    .ant-layout {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .ant-layout-content {
+        padding: 12px !important;
+        margin: 0 !important;
+        -webkit-overflow-scrolling: touch !important;
+        height: auto !important;
+        min-height: calc(100vh - 70px) !important;
+    }
+
+    .ant-card {
+        border-radius: 8px !important;
+        margin: 0 !important;
+        padding: 12px !important;
+    }
+
+    .ant-table-wrapper {
+        width: 100% !important;
+        overflow-x: auto !important;
+    }
+
+    .ant-table {
+        width: 100% !important;
+    }
+
+    body {
+        overflow-x: hidden !important;
+    }
+
+    /* Page header responsive styles */
+    .ant-breadcrumb {
+        text-align: center !important;
+        margin-bottom: 8px !important;
+        white-space: normal !important;
+        word-wrap: break-word !important;
+    }
+
+    .ant-typography {
+        text-align: center !important;
+    }
+
+    .ant-card-head {
+        padding: 0 12px !important;
+    }
+
+    .ant-card-head-title {
+        padding: 12px 0 !important;
+        font-size: 1.2rem !important;
+    }
+
+    .ant-card-body {
+        padding: 16px 12px !important;
+    }
+
+    /* Make buttons in headers more compact */
+    .ant-btn {
+        padding: 0 8px !important;
+        height: 32px !important;
+        font-size: 14px !important;
+    }
+
+    /* Fix header row alignment on small screens */
+    .ant-row {
+        flex-wrap: wrap !important;
+    }
+
+    /* Ensure page header content is properly centered */
+    .ant-page-header-heading-title,
+    .ant-page-header-heading-sub-title {
+        text-align: center !important;
+        width: 100% !important;
+    }
+
+    /* Improve spacing in the header */
+    h1,
+    h2,
+    h3,
+    h4,
+    h5 {
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+    }
+
+    /* Make breadcrumb nav responsive */
+    .ant-breadcrumb > span {
+        display: inline-block !important;
+        max-width: 120px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    /* Fix header button containers to be centered */
+    .ant-space {
+        justify-content: center !important;
+        margin-top: 12px !important;
+    }
 }
 
-/* Ensure content fills available space on all devices */
-.ant-layout-content {
-  flex: 1 1 auto !important;
-}
-  
-/* Fix drawer mask */
-.ant-drawer-mask {
-  opacity: 1 !important;
-  background-color: rgba(0, 0, 0, 0.45) !important;
-}
-  
+/* Fix for left space in mobile */
+@media (max-width: 768px) {
+    #root,
+    .ant-layout,
+    .ant-layout-has-sider {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 100% !important;
+        margin-left: 0 !important;
+        padding-left: 0 !important;
+        left: 0 !important;
+        overflow-x: hidden !important;
+    }
+
+    /* Ensure content fills available space on all devices */
+    .ant-layout-content {
+        flex: 1 1 auto !important;
+    }
+
+    /* Fix drawer mask */
+    .ant-drawer-mask {
+        opacity: 1 !important;
+        background-color: rgba(0, 0, 0, 0.45) !important;
+    }
+
     /* Fix for page header spacing */
     .ant-card .ant-card-body > div:first-child {
-      padding: 0 !important;
-      margin: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
     }
-  
+
     /* Fix menu height issues */
     .ant-layout-sider-children {
-      height: 100vh !important;
-      overflow-y: auto !important;
+        height: 100vh !important;
+        overflow-y: auto !important;
     }
-  
+
     /* Ensure layout works on all devices */
     .ant-layout {
-      min-height: 100vh !important;
-      height: auto !important;
-      width: 100% !important;
-      flex: 1 1 auto !important;
+        min-height: 100vh !important;
+        height: auto !important;
+        width: 100% !important;
+        flex: 1 1 auto !important;
     }
-    
+
     /* Make sure content always fills available space */
     .ant-layout-has-sider .ant-layout-content {
-      width: 100% !important;
-      flex: 1 1 auto !important;
+        width: 100% !important;
+        flex: 1 1 auto !important;
     }
-    
+
     /* Ensure cards and containers expand fully */
-    .ant-card, .container, .ant-layout-content > div {
-      width: 100% !important;
-      max-width: 100% !important;
+    .ant-card,
+    .container,
+    .ant-layout-content > div {
+        width: 100% !important;
+        max-width: 100% !important;
     }
-  
-  /* Adjust student management table */
-  .ant-table-cell {
-    padding: 8px 4px !important;
-    white-space: nowrap !important;
-  }
-  
-  /* Ensure content is properly centered */
-  .ant-layout-content > div {
-    padding: 0 !important;
-  }
-  
-  /* Make buttons more touch-friendly on mobile */
-  .ant-btn {
-    min-height: 32px !important;
-    touch-action: manipulation !important;
-  }
-  
-  /* Fix padding in cards on mobile */
-  .ant-card-body {
-    padding: 12px 8px !important;
-  }
-  
-  /* Reduce heading font sizes */
-  h1 {
-    font-size: 1.5rem !important;
-  }
-  
-  h2 {
-    font-size: 1.2rem !important;
-    line-height: 1.4 !important;
-  }
-  
-  h3, .ant-typography-h3 {
-    font-size: 1.1rem !important;
-  }
-  
-  .ant-typography {
-    font-size: 0.9rem !important;
-  }
-  
-  .ant-card-head-title {
-    font-size: 1.1rem !important;
-  }
-  
-  /* Fix vertical scroll issues */
-  .ant-layout-content {
-    overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-    position: relative !important;
-    z-index: 1 !important; 
-    height: auto !important;
-  }
-  
-  /* Ensure body can scroll on mobile */
-  body {
-    overflow-y: auto !important;
-    position: relative !important;
-    height: auto !important;
-    min-height: 100% !important;
-  }
-  
-  /* Allow video table to scroll */
-  .table-responsive {
-    overflow-x: auto !important;
-    overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-    max-height: 75vh !important;
-  }
-  
-  /* Fix video management page padding */
-  .ant-card-body .table-responsive {
-    padding: 0 !important;
-    margin: 0 -8px !important;
-  }
-  
-  /* Video management specific fixes */
-  .ant-tabs-content {
-    height: auto !important;
-    overflow: visible !important;
-  }
-  
-  .ant-tabs-tabpane {
-    padding: 8px !important;
-  }
-  
-  .ant-tabs-nav {
-    margin-bottom: 8px !important;
-  }
-  
-  /* Fix table overflow issues */
-  .ant-table-wrapper {
-    overflow-x: auto !important;
-    width: 100% !important;
-  }
-  
+
+    /* Adjust student management table */
+    .ant-table-cell {
+        padding: 8px 4px !important;
+        white-space: nowrap !important;
+    }
+
+    /* Ensure content is properly centered */
+    .ant-layout-content > div {
+        padding: 0 !important;
+    }
+
+    /* Make buttons more touch-friendly on mobile */
+    .ant-btn {
+        min-height: 32px !important;
+        touch-action: manipulation !important;
+    }
+
+    /* Fix padding in cards on mobile */
+    .ant-card-body {
+        padding: 12px 8px !important;
+    }
+
+    /* Reduce heading font sizes */
+    h1 {
+        font-size: 1.5rem !important;
+    }
+
+    h2 {
+        font-size: 1.2rem !important;
+        line-height: 1.4 !important;
+    }
+
+    h3,
+    .ant-typography-h3 {
+        font-size: 1.1rem !important;
+    }
+
+    .ant-typography {
+        font-size: 0.9rem !important;
+    }
+
+    .ant-card-head-title {
+        font-size: 1.1rem !important;
+    }
+
+    /* Fix vertical scroll issues */
+    .ant-layout-content {
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        position: relative !important;
+        z-index: 1 !important;
+        height: auto !important;
+    }
+
+    /* Ensure body can scroll on mobile */
+    body {
+        overflow-y: auto !important;
+        position: relative !important;
+        height: auto !important;
+        min-height: 100% !important;
+    }
+
+    /* Allow video table to scroll */
+    .table-responsive {
+        overflow-x: auto !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        max-height: 75vh !important;
+    }
+
+    /* Fix video management page padding */
+    .ant-card-body .table-responsive {
+        padding: 0 !important;
+        margin: 0 -8px !important;
+    }
+
+    /* Video management specific fixes */
+    .ant-tabs-content {
+        height: auto !important;
+        overflow: visible !important;
+    }
+
+    .ant-tabs-tabpane {
+        padding: 8px !important;
+    }
+
+    .ant-tabs-nav {
+        margin-bottom: 8px !important;
+    }
+
+    /* Fix table overflow issues */
+    .ant-table-wrapper {
+        overflow-x: auto !important;
+        width: 100% !important;
+    }
+
     /* Remove extra space in Sider Logo area */
     .ant-layout-sider-children > div:first-child {
-      padding: 12px 8px !important;
+        padding: 12px 8px !important;
     }
-  
+
     /* Fix drawer logo issues */
     .ant-drawer-body .d-flex {
-      justify-content: space-between !important;
-      align-items: center !important;
+        justify-content: space-between !important;
+        align-items: center !important;
     }
-  
+
     /* Fix toggle button alignment */
     .ant-layout-header .d-flex:first-child {
-      margin-left: 0 !important;
+        margin-left: 0 !important;
     }
-    
+
     /* Ensure proper spacing between sidebar and content */
     .ant-layout-has-sider .ant-layout {
-      transition: margin-left 0.2s !important;
+        transition: margin-left 0.2s !important;
     }
-  
+
     /* Fix sidebar collapse animation */
     .ant-layout-sider-children {
-      overflow: hidden !important;
+        overflow: hidden !important;
     }
-  
+
     .ant-layout-sider {
-      position: fixed !important;
-      z-index: 999 !important;
-      height: 100% !important;
-      left: 0 !important;
-      top: 0 !important;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+        position: fixed !important;
+        z-index: 999 !important;
+        height: 100% !important;
+        left: 0 !important;
+        top: 0 !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
     }
-  
-  /* Ensure proper modal scrolling */
-  .ant-modal-content {
-    max-height: 90vh !important;
-    overflow-y: auto !important;
-  }
-  
+
+    /* Ensure proper modal scrolling */
+    .ant-modal-content {
+        max-height: 90vh !important;
+        overflow-y: auto !important;
+    }
+
     /* Fix drawer header */
     .ant-drawer-header {
-      padding: 0 !important;
-      border-bottom: none !important;
+        padding: 0 !important;
+        border-bottom: none !important;
     }
-  
+
     .ant-drawer-body {
-      padding: 0 !important;
-      overflow-y: auto !important;
+        padding: 0 !important;
+        overflow-y: auto !important;
     }
-  
+
     .ant-drawer-content-wrapper {
-      width: 280px !important;
+        width: 280px !important;
     }
-    
+
     /* Ensure the drawer doesn't affect other content */
     .ant-drawer-content {
-      background-color: #fff !important;
+        background-color: #fff !important;
     }
-    
+
     /* Ensure menu is visible in sidebar */
     .ant-menu-inline {
-      border-right: none !important;
+        border-right: none !important;
     }
-    
+
     /* Ensure sider doesn't get hidden incorrectly */
     .ant-layout-sider-collapsed {
-      flex: 0 0 80px !important;
-      max-width: 80px !important;
-      min-width: 80px !important;
-      width: 80px !important;
+        flex: 0 0 80px !important;
+        max-width: 80px !important;
+        min-width: 80px !important;
+        width: 80px !important;
     }
-    
+
     /* Fix content width on sidebar toggle */
     .ant-layout-has-sider.ant-layout-sider-collapsed + .ant-layout {
-      width: calc(100% - 80px) !important;
-      margin-left: 80px !important;
-      transition: all 0.2s;
+        width: calc(100% - 80px) !important;
+        margin-left: 80px !important;
+        transition: all 0.2s;
     }
-    
+
     .ant-layout-has-sider:not(.ant-layout-sider-collapsed) + .ant-layout {
-      width: calc(100% - 280px) !important;
-      margin-left: 280px !important;
-      transition: all 0.2s;
+        width: calc(100% - 280px) !important;
+        margin-left: 280px !important;
+        transition: all 0.2s;
     }
 
     /* Pie chart customization */
     .dashboard-pie-chart .g2-label-inner,
     .g2-html-annotation text {
-      font-weight: bold !important;
-      font-family: 'Inter', sans-serif !important;
+        font-weight: bold !important;
+        font-family: "Inter", sans-serif !important;
     }
 
     .g2-html-annotation {
-      font-weight: 600 !important;
-      font-size: 13px !important;
+        font-weight: 600 !important;
+        font-size: 13px !important;
     }
 
     .g2-legend-list-item {
-      font-size: 12px !important;
-      padding: 4px 8px !important;
-      border-radius: 4px !important;
+        font-size: 12px !important;
+        padding: 4px 8px !important;
+        border-radius: 4px !important;
     }
 
     .g2-legend-marker {
-      border-radius: 4px !important;
-      width: 10px !important;
-      height: 10px !important;
+        border-radius: 4px !important;
+        width: 10px !important;
+        height: 10px !important;
     }
 
     /* Progress bar enhancements */
     .ant-progress-bg {
-      transition: all 0.5s ease-in-out;
-      border-radius: 4px !important;
-      height: 8px !important;
+        transition: all 0.5s ease-in-out;
+        border-radius: 4px !important;
+        height: 8px !important;
     }
 
     .ant-progress-inner {
-      background-color: #f5f5f5;
-      border-radius: 4px !important;
+        background-color: #f5f5f5;
+        border-radius: 4px !important;
     }
 
     .ant-progress-text {
-      color: #0067b8;
-      font-weight: 600;
+        color: #0067b8;
+        font-weight: 600;
     }
 
     /* List item hover effect */
     .ant-list-item {
-      transition: all 0.3s ease;
-      border-radius: 8px;
-      padding: 12px 16px !important;
-      margin-bottom: 8px;
-      border-bottom: 1px solid #f0f0f0 !important;
+        transition: all 0.3s ease;
+        border-radius: 8px;
+        padding: 12px 16px !important;
+        margin-bottom: 8px;
+        border-bottom: 1px solid #f0f0f0 !important;
     }
 
     .ant-list-item:hover {
-      background-color: #f0f7ff;
-      transform: translateX(4px);
+        background-color: #f0f7ff;
+        transform: translateX(4px);
     }
 
     .ant-list-item-meta-title {
-      font-weight: 500;
-      margin-bottom: 4px !important;
+        font-weight: 500;
+        margin-bottom: 4px !important;
     }
 
     .ant-list-item-meta-description {
-      font-size: 12px;
-      color: #888;
+        font-size: 12px;
+        color: #888;
     }
 
     .ant-list-item:last-child {
-      margin-bottom: 0;
+        margin-bottom: 0;
     }
 }
