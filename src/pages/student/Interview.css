@@ -1,0 +1,114 @@
+/* Interview Page Styles - High specificity to override Ant Design */
+
+/* Override Ant Design and Bootstrap for interview page */
+body .interview-page,
+html .interview-page {
+  background-color: #f9fafb !important;
+}
+
+/* Force grid layout with high specificity */
+.interview-page .grid,
+body .interview-page .grid,
+html .interview-page .grid {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 2rem !important;
+  max-width: 1200px !important;
+  margin: 0 auto !important;
+  padding: 0 1rem !important;
+}
+
+/* Responsive grid with high specificity */
+@media (min-width: 768px) {
+  .interview-page .md\:grid-cols-2,
+  body .interview-page .md\:grid-cols-2,
+  html .interview-page .md\:grid-cols-2 {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .interview-page .lg\:grid-cols-3,
+  body .interview-page .lg\:grid-cols-3,
+  html .interview-page .lg\:grid-cols-3 {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+}
+
+/* Card styles with high specificity */
+.interview-page .bg-white,
+body .interview-page .bg-white,
+html .interview-page .bg-white {
+  background-color: white !important;
+  border-radius: 0.5rem !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+  border: none !important;
+  overflow: hidden !important;
+}
+
+/* Hover effects */
+.interview-page .bg-white:hover,
+body .interview-page .bg-white:hover,
+html .interview-page .bg-white:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Text colors with high specificity */
+.interview-page .text-gray-800,
+body .interview-page .text-gray-800,
+html .interview-page .text-gray-800 {
+  color: #1f2937 !important;
+}
+
+.interview-page .text-gray-600,
+body .interview-page .text-gray-600,
+html .interview-page .text-gray-600 {
+  color: #4b5563 !important;
+}
+
+.interview-page .text-blue-600,
+body .interview-page .text-blue-600,
+html .interview-page .text-blue-600 {
+  color: #2563eb !important;
+}
+
+/* Background colors */
+.interview-page .bg-blue-100,
+body .interview-page .bg-blue-100,
+html .interview-page .bg-blue-100 {
+  background-color: #dbeafe !important;
+}
+
+.interview-page .text-blue-700,
+body .interview-page .text-blue-700,
+html .interview-page .text-blue-700 {
+  color: #1d4ed8 !important;
+}
+
+/* Border colors */
+.interview-page .border-gray-100,
+body .interview-page .border-gray-100,
+html .interview-page .border-gray-100 {
+  border-color: #f3f4f6 !important;
+}
+
+/* Transitions */
+.interview-page *,
+body .interview-page *,
+html .interview-page * {
+  transition: all 0.3s ease !important;
+}
+
+/* Remove any Ant Design interference */
+.interview-page .ant-layout,
+body .interview-page .ant-layout,
+html .interview-page .ant-layout {
+  background: transparent !important;
+}
+
+.interview-page .ant-layout-content,
+body .interview-page .ant-layout-content,
+html .interview-page .ant-layout-content {
+  background: transparent !important;
+}

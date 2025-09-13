@@ -13,6 +13,26 @@
     --color-background-white: #ffffff;
 }
 
+/* AI Tools Card Enhancements */
+.ai-tool-card {
+    border: 1px solid #e8e8e8 !important;
+    background-color: #ffffff !important;
+}
+
+.ai-tool-card:hover {
+    border-color: #1890ff !important;
+    box-shadow: 0 8px 32px rgba(24, 144, 255, 0.15) !important;
+    transform: translateY(-2px);
+}
+
+.ai-tool-card .ant-card-body {
+    border: 1px solid transparent !important;
+}
+
+.ai-tool-card:hover .ant-card-body {
+    border-color: #1890ff !important;
+}
+
 /* Base styles to ensure proper display across all devices */
 html,
 body {
