@@ -49,6 +49,8 @@ import StudentQuizzesByLanguage from "./pages/student/QuizzesByLanguage";
 import ReviewAssignment from "./pages/student/ReviewAssignment";
 import TakeQuiz from "./pages/student/TakeQuiz";
 import QuizResults from "./pages/student/QuizResults";
+import AIToolsPage from "./pages/common/ai-tools/ai-tools";
+import Interview from "./pages/student/Interview";
 
 // Protected Route component
 function ProtectedRoute({ children, allowedRoles }) {
@@ -73,6 +75,8 @@ function AppRoutes() {
       <Route path="/login" element={<Login />} />
       <Route path="/syllabus" element={<Syllabus />} />
       <Route path="/unauthorized" element={<Unauthorized />} />
+      <Route path="/ai-tools" element={<AIToolsPage />} />
+      <Route path="/interview" element={<Interview />} />
 
       {/* Trainer Routes */}
       <Route
