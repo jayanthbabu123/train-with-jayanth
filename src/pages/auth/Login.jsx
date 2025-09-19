@@ -3,6 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { Card, Button, Typography, Spin, Divider, Row, Col } from 'antd';
 import { GoogleOutlined, LockOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import { FaGraduationCap } from 'react-icons/fa';
 
 const { Title, Text } = Typography;
 
@@ -77,7 +78,7 @@ export default function Login() {
                       boxShadow: '0 4px 12px rgba(0, 103, 184, 0.2)'
                     }}
                   >
-                    TJ
+                    <FaGraduationCap style={{ fontSize: 36 }} />
                   </div>
                 </div>
                 <Title level={2} style={{ marginBottom: 8, color: '#0067b8' }}>
@@ -143,4 +144,4 @@ export default function Login() {
       </div>
     </div>
   );
-} 
+}
