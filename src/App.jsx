@@ -50,6 +50,7 @@ import ReviewAssignment from "./pages/student/ReviewAssignment";
 import TakeQuiz from "./pages/student/TakeQuiz";
 import QuizResults from "./pages/student/QuizResults";
 
+
 // Protected Route component
 function ProtectedRoute({ children, allowedRoles }) {
   const { currentUser } = useAuth();
@@ -97,7 +98,9 @@ function AppRoutes() {
                 <Route
                   path="quizzes/:language"
                   element={<QuizzesByLanguage />}
+                
                 />
+                
               </Routes>
             </DashboardLayout>
           </ProtectedRoute>
